@@ -752,6 +752,61 @@
       "name": "Shufersal",
       "ats": "shufersal",
       "slug": "shufersal"
+    },
+    {
+      "name": "Island",
+      "ats": "greenhouse",
+      "slug": "island"
+    },
+    {
+      "name": "Rubrik",
+      "ats": "greenhouse",
+      "slug": "rubrik"
+    },
+    {
+      "name": "Cloudinary",
+      "ats": "lever",
+      "slug": "cloudinary"
+    },
+    {
+      "name": "ServiceNow",
+      "ats": "smartrecruiters",
+      "slug": "ServiceNow"
+    },
+    {
+      "name": "Autodesk",
+      "ats": "workday",
+      "slug": "autodesk/wd1/Ext"
+    },
+    {
+      "name": "Thales (Imperva)",
+      "ats": "workday",
+      "slug": "thales/wd3/Careers"
+    },
+    {
+      "name": "Microsoft",
+      "ats": "eightfold",
+      "slug": "apply.careers.microsoft.com|microsoft.com"
+    },
+    {
+      "name": "Google",
+      "ats": "google",
+      "slug": "google"
+    },
+    {
+      "name": "Panaya",
+      "ats": "comeet_api",
+      "slug": "61.00C|16C5B071C444CCC16C5B044416C888"
+    },
+    {
+      "name": "Overwolf",
+      "ats": "comeet_api",
+      "slug": "B1.001|1B16C4BD7005131B1A26F391B1"
+    },
+    {
+      "name": "WSC Sports",
+      "ats": "comeet_api",
+      "slug": "93.007|39711F3AC5AC539701CB81CB8204FE5C"
     }
   ],
   "social_sources": [
@@ -1054,8 +1109,21 @@
     {
       "name": "Bazan",
       "url": "https://www.bazan.co.il/career/"
+    },
+    {
+      "name": "SAP Labs Israel",
+      "url": "https://jobs.sap.com/go/SAP-Jobs-in-Israel/351601/"
+    },
+    {
+      "name": "Optibus",
+      "url": "https://optibus.com/careers/"
+    },
+    {
+      "name": "mavens by Zynga",
+      "url": "https://www.zynga.com/careers/"
     }
   ],
   "_company_sites_comment": "2026-11-07: hibob / eightfold / elbit / matrix / malam readers live in company_sites.py. Matrix and Malam give regions, not cities, hence 'גוש דן' in locations. Verint (Oracle HCM) and Verbit (WordPress) are readable but had 0 Israel jobs; Rafael and IAI sit behind a Reblaze/Link11 bot wall. Batch 2 (company_sites_b2.py): Keshet (comeet, no location -> Tel Aviv), Ness, Max, Isracard (Wix data), Cal, Bezeq, Partner (AdamTotal token), Cellcom (Episerver), HOT, Clalit (RedMatch), Maccabi, Sheba (Ramat Gan). Region-only sources pass the location filter only when the region/title names a wanted place. Batch 3 (company_sites_b3.py, 2026-11-08): Ichilov (RedMatch/TopMatch), Hadassah, Mekorot, Strauss, Osem, Tnuva, Shufersal (Wix web method). Unreadable: Bazan, Israel Post (Cloudflare), Super-Pharm (Reblaze), ZIM (Akamai + lazy widget), IEC (source not found).",
-  "_removed_companies": "2026-11-08: Cybereason (merged into Trustwave) and Innovid (acquired by Mediaocean) - their Greenhouse boards return 404 and no new public board was found."
+  "_removed_companies": "2026-11-08: Cybereason (merged into Trustwave) and Innovid (acquired by Mediaocean) - their Greenhouse boards return 404 and no new public board was found.",
+  "_dnb_2026_comment": "2026-11-08: Dun & Bradstreet 2026 top-20 list. Already scanned: NVIDIA, Palo Alto, Salesforce, Silverfort, AppsFlyer, Coralogix. Added: Island, Rubrik, Cloudinary, ServiceNow, Autodesk, Thales (Imperva), Microsoft (Eightfold), Google, Panaya/Overwolf/WSC (Comeet API, uid|token from their public careers pages). Manual only: SAP, Optibus, mavens by Zynga (no readable source found)."
 }

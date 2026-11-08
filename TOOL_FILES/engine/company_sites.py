@@ -23,6 +23,7 @@ from __future__ import annotations
 import html as htmlmod
 import json
 import re
+import time
 from datetime import datetime, timezone
 from typing import Any
 
@@ -94,8 +95,15 @@ def from_eightfold(company: str, slug: str) -> list[Job]:
     host, _, domain = slug.partition("|")
     jobs, start = [], 0
     while start < 1000:
-        data = _get(f"https://{host}/api/pcsx/search", params={
-            "domain": domain, "query": "", "location": "Israel", "start": start, "sort_by": "timestamp"}).json()
+        params = {"domain": domain, "query": "", "location": "Israel", "start": start, "sort_by": "timestamp"}
+        for wait in (0, 3, 6, 12):  # Microsoft's Eightfold answers 429 to quick repeats
+            time.sleep(wait)
+            response = cr.get(f"https://{host}/api/pcsx/search", params=params, impersonate="chrome", timeout=30)
+            if response.status_code != 429:
+                break
+        response.raise_for_status()
+        data = response.json()
+        time.sleep(0.5)
         positions = (data.get("data") or {}).get("positions") or []
         if not positions:
             break
@@ -241,3 +249,8 @@ import company_sites_b3 as _b3  # noqa: E402
 
 READERS.update(_b3.READERS)
 DESCRIBERS.update(_b3.DESCRIBERS)
+
+import company_sites_b4 as _b4  # noqa: E402
+
+READERS.update(_b4.READERS)
+DESCRIBERS.update(_b4.DESCRIBERS)

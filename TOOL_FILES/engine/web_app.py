@@ -59,7 +59,8 @@ SOURCE_LABELS = {
     "successfactors": "SuccessFactors", "manual_post": "פוסט (הוספת)",
     **{ats: "אתר החברה" for ats in ("hibob", "eightfold", "elbit", "matrix", "malam", "ness", "max", "isracard", "cal",
                                     "bezeq", "adamtotal", "cellcom", "hot", "clalit", "maccabi", "sheba", "redmatch",
-                                    "hadassah", "mekorot", "strauss", "osem", "tnuva", "shufersal")},
+                                    "hadassah", "mekorot", "strauss", "osem", "tnuva", "shufersal", "comeet_api",
+                                    "google")},
 }
 
 # (city, district, patterns). Patterns are matched on the lowercased location
@@ -352,6 +353,7 @@ CAREER_HE = {
     "ZIM": ("צים", INFRA), "Bazan": ("בזן", INFRA),
     "Strauss": ("שטראוס", FOOD), "Osem-Nestle": ("אסם-נסטלה", FOOD), "Tnuva": ("תנובה", FOOD),
     "Shufersal": ("שופרסל", FOOD), "Super-Pharm": ("סופר-פארם", FOOD),
+    "SAP Labs Israel": ("SAP Labs ישראל", HITECH), "Optibus": ("אופטיבוס", HITECH), "mavens by Zynga": ("mavens by Zynga", HITECH),
 }
 
 
