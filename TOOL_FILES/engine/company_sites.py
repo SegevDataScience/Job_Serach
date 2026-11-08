@@ -160,6 +160,9 @@ _MATRIX_ITEM = re.compile(r'<div[^>]*class="[^"]*job-item[^"]*"[^>]*job-id="(\d+
 
 
 def from_matrix(company: str, slug: str) -> list[Job]:
+    from find_jobs import excluded_sector, load_config
+
+    config = load_config()
     base = slug.rstrip("/") + "/"
     jobs, seen = [], set()
     for page in range(1, 80):
@@ -177,6 +180,10 @@ def from_matrix(company: str, slug: str) -> list[Job]:
             seen.add(job_id)
             found += 1
             areas = re.search(r'<b[^>]*class="[^"]*job-areas[^"]*"[^>]*>(.*?)</b>', block, re.S)
+            # Matrix staffs for banks and insurers without naming them ("לבנק מוביל"); the listing carries
+            # the posting text, so the sector filter can read it here (score_job only sees the title).
+            if excluded_sector(company, html_to_text(block), config):
+                continue
             jobs.append(Job(
                 company=company, title=htmlmod.unescape(re.sub(r"<[^>]+>", "", link.group(2))).strip(),
                 location=htmlmod.unescape(re.sub(r"<[^>]+>", "", areas.group(1))).strip() + ", Israel" if areas else "Israel",

@@ -497,7 +497,8 @@ def score_job(job: Job, config: dict[str, Any], text: str = "") -> Job | None:
         return None
 
     # An Israeli recruiting post often names no city; those are kept rather than lost.
-    post_without_city = job.ats == "linkedin_post" and "city not stated" in job.location
+    # Same for employers whose own site never names a place (Max, Cal): "city not stated".
+    post_without_city = "city not stated" in job.location
     if not post_without_city and not matches_location(job.location, [l.lower() for l in config["locations"]],
                                                       config.get("include_bare_remote", False),
                                                       [l.lower() for l in config.get("exclude_locations", [])]):

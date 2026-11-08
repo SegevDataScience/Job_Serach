@@ -31,9 +31,9 @@ flowchart LR
 
     subgraph UI["4 · Browser page (local)"]
         direction TB
-        U1["TOP 15"]
-        U2["Deep dive<br/>filters by district, date,<br/>score, source"]
-        U3["Job details<br/>skills you have / missing"]
+        U1["TOP 15<br/>new-since-last-visit tags"]
+        U2["Deep dive<br/>empty until a district is picked;<br/>date, score, source filters"]
+        U3["Job details<br/>skills you have / missing,<br/>cover letter (Claude API)"]
         U4["My applications"]
     end
 
@@ -72,4 +72,6 @@ Personal files are not in this repository: the CV (pointed to by `RESUME_INPUT` 
 | `TOOL_FILES/engine/skill_match.py` | Skill fit: posting text vs. skills found in the CV |
 | `TOOL_FILES/engine/tracker.py` | The Excel tracker |
 | `TOOL_FILES/engine/tailor_resume.py` | Optional: tailor the CV to one posting with the Claude API |
+| `TOOL_FILES/engine/cover_letter.py` | Optional: a short cover letter from the CV; every number is checked against the CV |
+| `TOOL_FILES/engine/publish_github.py` | Publishes the code (a fixed whitelist only) to this repository |
 | `TOOL_FILES/engine/job_search_config.json` | Keywords, regions, companies, exclusions |

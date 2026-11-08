@@ -24,9 +24,22 @@ from company_sites import _get, _wanted_place, page_description
 from find_jobs import Job
 
 
-def _place_loc(region: str, title: str, default_city: str = "") -> str:
+# Places outside his regions that titles name ("נציג/ה באשדוד", "מוקד צפון"): such a job is not
+# "city not stated", it is elsewhere.
+_ELSEWHERE = re.compile(r"מודיעין עילית|ביתר|אשדוד|אשקלון|חיפה|קריות|נשר|באר שבע|נתניה|כפר סבא|רעננה|הוד השרון|רחובות|קריית גת|קרית גת|"
+                        r"נוף הגליל|נצרת|עפולה|טבריה|כרמיאל|אילת|חדרה|צפון|דרום|השרון|יוקנעם|יקנעם|קיסריה|לוד|רמלה|"
+                        r"haifa|ashdod|netanya|beer sheva|north|south")
+
+
+def _place_loc(region: str, title: str, default_city: str = "", keep_unstated: bool = False) -> str:
+    """keep_unstated: for employers whose postings never name a place (Max, Cal), a title with
+    no place at all is kept as "city not stated" (score_job lets those through) instead of lost."""
     parts = [p for p in ((region or "").strip(), _wanted_place(title) or default_city) if p]
-    return ", ".join(parts) + ", Israel" if parts else "Israel"
+    if parts:
+        return ", ".join(parts) + ", Israel"
+    if keep_unstated and not _ELSEWHERE.search((title or "").lower()):
+        return "Israel (city not stated)"
+    return "Israel"
 
 
 def _iso(text: str) -> str:
@@ -78,7 +91,7 @@ def from_max(company: str, slug: str) -> list[Job]:
             link = (p.get("linkUrl") or "").split("?")[0]
             url = link if link.startswith("http") else "https://www.max.co.il" + link
             title = (p.get("title") or "").strip()
-            jobs.append(Job(company=company, title=title, location=_place_loc("", title), url=url,
+            jobs.append(Job(company=company, title=title, location=_place_loc("", title, keep_unstated=True), url=url,
                             ats="max", slug=slug, job_id=url))
     return jobs
 
@@ -100,7 +113,9 @@ def from_isracard(company: str, slug: str) -> list[Job]:
         created = d.get("_createdDate") or {}
         created = created.get("$date", "") if isinstance(created, dict) else str(created)
         jobs.append(Job(company=company, title=title,
-                        location=_place_loc(areas.get(str(int(d.get("JobAreaCode1") or 0)), ""), title),
+                        # Isracard's site gives its address as Bnei Brak; a central/unspecified job without a city goes there.
+                        location=_place_loc(area := areas.get(str(int(d.get("JobAreaCode1") or 0)), ""), title,
+                                            "בני ברק" if area in ("מרכז", "") and not _ELSEWHERE.search(title) else ""),
                         url="https://www.isracard.co.il/career" + (d.get("link-mshrvt-title") or ""),
                         ats="isracard", slug=slug, job_id=str(int(d["JobNumber"])) if d.get("JobNumber") else str(d.get("_id", "")),
                         updated=created[:10] or _iso(d.get("AdamUpdateDate") or "")))
@@ -117,7 +132,7 @@ def from_cal(company: str, slug: str) -> list[Job]:
         if not title or not job_id:
             continue
         t = _strip(title.group(1))
-        jobs.append(Job(company=company, title=t, location=_place_loc("", t), url=f"{url}#{job_id.group(1)}",
+        jobs.append(Job(company=company, title=t, location=_place_loc("", t, keep_unstated=True), url=f"{url}#{job_id.group(1)}",
                         ats="cal", slug=slug, job_id=job_id.group(1)))
     return jobs
 

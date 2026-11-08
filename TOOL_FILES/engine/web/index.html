@@ -83,6 +83,7 @@ tr.sent td { opacity: .55; }
 .ttl { font-weight: 600; }
 .sub { color: var(--muted); font-size: 12px; }
 .tag { display: inline-block; font-size: 11px; border-radius: 4px; padding: 0 5px; margin-inline-start: 4px; background: var(--chip); color: var(--muted); }
+.tag.newtag { background: var(--good-soft); color: var(--good); font-weight: 700; }
 .tag.lead { background: var(--accent-soft); color: var(--accent); }
 .tag.listed { background: var(--warn-soft); color: var(--warn); }
 .tag.sent { background: var(--good-soft); color: var(--good); }
@@ -167,6 +168,7 @@ ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); 
     <button class="btn primary" id="btnScan">סרוק מחדש</button>
     <button class="btn" data-open="tracker">פתח את האקסל</button>
     <button class="btn" data-open="manual">התאמת קו"ח ידנית</button>
+    <button class="btn" id="btnPublish" title="מעלה ל-GitHub רק את קוד הכלי. בלי קורות חיים, בלי האקסל ובלי מפתחות">עדכן GitHub</button>
   </div>
   <nav class="tabs">
     <button class="tab on" data-tab="top">TOP 15</button>
@@ -228,7 +230,8 @@ ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); 
       <div class="f"><span class="lbl">מיקום <button class="link" id="clearCities">נקה</button></span><div class="cities" id="cities"></div></div>
       <div class="f"><span class="lbl">התאמה מינימלית</span>
         <div class="range"><input type="range" id="minScore" min="0" max="100" step="5" value="0"><b id="minScoreVal">0</b></div></div>
-      <div class="f"><span class="lbl">סוג תפקיד</span><label class="check"><input type="checkbox" id="leadOnly"> רק ניהול / Lead</label></div>
+      <div class="f"><span class="lbl">סוג תפקיד</span><label class="check"><input type="checkbox" id="leadOnly"> רק ניהול / Lead</label>
+        <label class="check"><input type="checkbox" id="newOnly"> רק משרות חדשות מאז הביקור הקודם <small id="newCount" class="sub"></small></label></div>
       <div class="f"><span class="lbl">סטטוס</span><div class="chips" id="states"></div></div>
       <div class="f"><span class="lbl">מקור <button class="link" id="clearSources">נקה</button></span><div class="chips" id="sources"></div></div>
       <button class="btn" id="reset" style="width:100%">אפס את כל הסינונים</button>
@@ -336,6 +339,16 @@ ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); 
     <div class="fitbox" id="dFit"></div>
     <h3>התאמה לכישורים שלך <span id="dSkillScore"></span></h3>
     <div id="dSkills" class="meta">מחשב מול קורות החיים…</div>
+    <div style="margin:14px 0 4px">
+      <button class="btn" id="dLetterBtn">✉ כתוב מכתב מקדים <small class="sub">(קריאה ל-API, כ-15 אג')</small></button>
+    </div>
+    <div id="dLetter" class="hidden">
+      <textarea class="inp" id="dLetterText" dir="auto" style="min-height:260px; margin-top:8px"></textarea>
+      <div style="display:flex; gap:10px; align-items:center; margin-top:6px; flex-wrap:wrap">
+        <button class="btn" id="dLetterCopy">העתק</button>
+        <span class="meta" id="dLetterNote"></span>
+      </div>
+    </div>
     <h3 style="margin-top:16px">התאמת תפקיד (מהכותרת) <span id="dScore"></span></h3>
     <table class="why" id="dWhy"></table>
     <h3>תיאור המשרה</h3>
@@ -347,7 +360,18 @@ ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); 
 <script>
 const $ = s => document.querySelector(s);
 const STORE = "jobsearch.v1";
-const STATES = [["new", "חדש"], ["listed", "ברשימה"], ["sent", "הוגש"], ["hidden", "הוסתר"]];
+const STATES = [["new", "טרם טופל"], ["listed", "ברשימה"], ["sent", "הוגש"], ["hidden", "הוסתר"]];
+// "New since your last visit": the visit before this session is kept for the whole session, so a refresh keeps the tags.
+let PREV_VISIT = "";
+try {
+  PREV_VISIT = sessionStorage.getItem("prevVisit");
+  if (PREV_VISIT === null) {
+    PREV_VISIT = localStorage.getItem("jobsearch.lastVisit") || "";
+    sessionStorage.setItem("prevVisit", PREV_VISIT);
+  }
+  localStorage.setItem("jobsearch.lastVisit", new Date().toISOString().slice(0, 19));
+} catch (e) { PREV_VISIT = ""; }
+const isNew = j => !!(PREV_VISIT && j.first_seen && j.first_seen > PREV_VISIT);
 let DISTRICTS = [], CITY_DISTRICT = {};
 let JOBS = [], SCANNED = null, APPS = [], SEARCHES = [];
 let saved = {};
@@ -360,7 +384,7 @@ const DONE = new Set(saved.done || []);
 const CDONE = new Set(saved.cdone || []);
 const A = { q: "", status: "all" };
 function persist() {
-  try { localStorage.setItem(STORE, JSON.stringify({ filters: { ...F, cities: [], top15: false }, hidden: [...HIDDEN], done: [...DONE], cdone: [...CDONE] })); } catch (e) {}
+  try { localStorage.setItem(STORE, JSON.stringify({ filters: { ...F, cities: [], top15: false, newOnly: false }, hidden: [...HIDDEN], done: [...DONE], cdone: [...CDONE] })); } catch (e) {}
 }
 function toast(msg) {
   const t = $("#toast"); t.textContent = msg; t.classList.add("show");
@@ -449,6 +473,7 @@ $("#age").onchange = e => { F.age = e.target.value; render(); };
 $("#undated").onchange = e => { F.undated = e.target.checked; render(); };
 $("#minScore").oninput = e => { F.minScore = +e.target.value; $("#minScoreVal").textContent = F.minScore; render(); };
 $("#leadOnly").onchange = e => { F.leadOnly = e.target.checked; render(); };
+$("#newOnly").onchange = e => { F.newOnly = e.target.checked; render(); };
 $("#clearCities").onclick = () => { F.cities.length = 0; buildFilters(); render(); };
 $("#clearSources").onclick = () => { F.sources.length = 0; buildFilters(); render(); };
 $("#reset").onclick = () => { Object.assign(F, JSON.parse(JSON.stringify(DEF))); buildFilters(); render(); };
@@ -469,6 +494,7 @@ function passes(j) {
   if (F.cities.length && !j.cities.some(c => F.cities.includes(c))) return false;
   if (j.fit < F.minScore) return false;
   if (F.leadOnly && !j.leadership) return false;
+  if (F.newOnly && !isNew(j)) return false;
   if (F.states.length && !F.states.includes(stateOf(j))) return false;
   if (F.sources.length && !F.sources.includes(j.source)) return false;
   return true;
@@ -514,11 +540,14 @@ function renderTop() {
   $("#topEmpty").classList.toggle("hidden", top.length > 0);
   $("#topEmpty").textContent = JOBS.length ? "אין משרות." : "טוען…";
   const scored = JOBS.filter(j => j.skill != null).length;
-  $("#topMeta").textContent = JOBS.length ? `מתוך ${JOBS.length} משרות · ${scored} עם התאמת כישורים` : "";
+  const fresh = JOBS.filter(isNew).length;
+  $("#topMeta").textContent = JOBS.length ? `מתוך ${JOBS.length} משרות · ${scored} עם התאמת כישורים`
+    + (PREV_VISIT ? ` · ${fresh} חדשות מאז הביקור הקודם` : "") : "";
+  $("#newCount").textContent = PREV_VISIT ? `(${fresh})` : "(מהביקור הבא)";
 }
 function rowHtml(j, rank) {
     const st = stateOf(j);
-    const tags = (j.leadership ? `<span class="tag lead">ניהול</span>` : "")
+    const tags = (isNew(j) ? `<span class="tag newtag">🆕 חדשה</span>` : "") + (j.leadership ? `<span class="tag lead">ניהול</span>` : "")
       + (st === "listed" ? `<span class="tag listed">ברשימה</span>` : st === "sent" ? `<span class="tag sent">הוגש</span>` : "");
     return `<tr class="${st === "sent" ? "sent" : ""}" data-id="${j.id}">
       ${rank ? `<td class="sub">${rank}</td>` : ""}
@@ -568,6 +597,7 @@ async function openDrawer(j, keepBody) {
   renderFit(j);
   if (keepBody) return;
   $("#dSkills").textContent = "מחשב מול קורות החיים…"; $("#dSkillScore").innerHTML = "";
+  $("#dLetter").classList.add("hidden"); $("#dLetterText").value = "";
   $("#dWhy").innerHTML = ""; $("#dDesc").textContent = "טוען את תיאור המשרה…";
   try {
     const d = await api("/api/job?id=" + j.id);
@@ -589,6 +619,24 @@ async function openDrawer(j, keepBody) {
     } else if (d.error) { $("#dSkills").textContent = "אין תיאור, אז אין התאמת כישורים. הציון מבוסס על הכותרת בלבד."; }
   } catch (err) { if (OPEN === j) $("#dDesc").textContent = err.message; }
 }
+$("#dLetterBtn").onclick = async () => {
+  if (!OPEN) return;
+  const j = OPEN, b = $("#dLetterBtn");
+  b.disabled = true; b.firstChild.textContent = "✉ כותב מכתב… ";
+  try {
+    const r = await api("/api/cover-letter", { id: j.id });
+    if (OPEN !== j) return;
+    $("#dLetter").classList.remove("hidden"); $("#dLetterText").value = r.text;
+    $("#dLetterNote").innerHTML = (r.unsupported.length
+      ? `<span style="color:var(--bad)">⚠ מספרים שלא מופיעים בקורות החיים שלך — בדוק או מחק לפני שליחה: ${esc(r.unsupported.join(", "))}</span> · `
+      : "✓ כל המספרים במכתב מופיעים בקורות החיים · ") + `נשמר ב-${esc(r.path.split(/[\\/]/).slice(-2).join("/"))}`;
+  } catch (e) { toast(e.message); }
+  b.disabled = false; b.firstChild.textContent = "✉ כתוב מכתב מקדים ";
+};
+$("#dLetterCopy").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#dLetterText").value); toast("המכתב הועתק"); }
+  catch (e) { $("#dLetterText").select(); document.execCommand("copy"); toast("המכתב הועתק"); }
+};
 function renderFit(j) {
   $("#dFit").innerHTML = `<span class="big">${j.fit}</span><div><b>התאמה ${esc(j.fit_level)}</b>
     <div class="meta">תפקיד ${j.score} · כישורים ${j.skill == null ? "עוד לא חושב" : j.skill + "%"}</div></div>`;
@@ -777,6 +825,12 @@ async function poll() {
 $("#btnScan").onclick = async () => {
   if (!confirm("סריקה מלאה לוקחת כ-10 דקות. להתחיל?")) return;
   await api("/api/scan", {}); showingOld = false; showTab("jobs"); poll();
+};
+$("#btnPublish").onclick = async () => {
+  if (!confirm("להעלות ל-GitHub (repo ציבורי) את קוד הכלי בלבד? קורות החיים, האקסל והמפתח לא עולים.")) return;
+  const b = $("#btnPublish"); b.disabled = true; b.textContent = "מעלה…";
+  try { toast((await api("/api/publish", {})).message); } catch (e) { toast(e.message); }
+  b.disabled = false; b.textContent = "עדכן GitHub";
 };
 $("#toggleLog").onclick = () => { $("#log").classList.toggle("hidden"); $("#toggleLog").textContent = $("#log").classList.contains("hidden") ? "הצג יומן סריקה" : "הסתר יומן"; };
 $("#showOld").onclick = async () => { showingOld = true; $("#showOld").classList.add("hidden"); await loadJobs(); };

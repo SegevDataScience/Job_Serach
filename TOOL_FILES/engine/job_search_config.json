@@ -309,11 +309,6 @@
       "slug": "bringg"
     },
     {
-      "name": "Cybereason",
-      "ats": "greenhouse",
-      "slug": "cybereason"
-    },
-    {
       "name": "Lightrun",
       "ats": "greenhouse",
       "slug": "lightrun"
@@ -452,11 +447,6 @@
       "name": "Claroty",
       "ats": "comeet",
       "slug": "claroty/F2.004"
-    },
-    {
-      "name": "Innovid",
-      "ats": "greenhouse",
-      "slug": "innovid"
     },
     {
       "name": "Groupon",
@@ -1066,5 +1056,6 @@
       "url": "https://www.bazan.co.il/career/"
     }
   ],
-  "_company_sites_comment": "2026-11-07: hibob / eightfold / elbit / matrix / malam readers live in company_sites.py. Matrix and Malam give regions, not cities, hence 'גוש דן' in locations. Verint (Oracle HCM) and Verbit (WordPress) are readable but had 0 Israel jobs; Rafael and IAI sit behind a Reblaze/Link11 bot wall. Batch 2 (company_sites_b2.py): Keshet (comeet, no location -> Tel Aviv), Ness, Max, Isracard (Wix data), Cal, Bezeq, Partner (AdamTotal token), Cellcom (Episerver), HOT, Clalit (RedMatch), Maccabi, Sheba (Ramat Gan). Region-only sources pass the location filter only when the region/title names a wanted place. Batch 3 (company_sites_b3.py, 2026-11-08): Ichilov (RedMatch/TopMatch), Hadassah, Mekorot, Strauss, Osem, Tnuva, Shufersal (Wix web method). Unreadable: Bazan, Israel Post (Cloudflare), Super-Pharm (Reblaze), ZIM (Akamai + lazy widget), IEC (source not found)."
+  "_company_sites_comment": "2026-11-07: hibob / eightfold / elbit / matrix / malam readers live in company_sites.py. Matrix and Malam give regions, not cities, hence 'גוש דן' in locations. Verint (Oracle HCM) and Verbit (WordPress) are readable but had 0 Israel jobs; Rafael and IAI sit behind a Reblaze/Link11 bot wall. Batch 2 (company_sites_b2.py): Keshet (comeet, no location -> Tel Aviv), Ness, Max, Isracard (Wix data), Cal, Bezeq, Partner (AdamTotal token), Cellcom (Episerver), HOT, Clalit (RedMatch), Maccabi, Sheba (Ramat Gan). Region-only sources pass the location filter only when the region/title names a wanted place. Batch 3 (company_sites_b3.py, 2026-11-08): Ichilov (RedMatch/TopMatch), Hadassah, Mekorot, Strauss, Osem, Tnuva, Shufersal (Wix web method). Unreadable: Bazan, Israel Post (Cloudflare), Super-Pharm (Reblaze), ZIM (Akamai + lazy widget), IEC (source not found).",
+  "_removed_companies": "2026-11-08: Cybereason (merged into Trustwave) and Innovid (acquired by Mediaocean) - their Greenhouse boards return 404 and no new public board was found."
 }

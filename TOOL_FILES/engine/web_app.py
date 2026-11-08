@@ -145,6 +145,30 @@ def load_manual() -> list[dict]:
         return []
 
 
+FIRST_SEEN_FILE = ENGINE_DIR / "first_seen.json"  # url -> when a scan first returned it (for "new since last visit")
+
+
+def _first_seen(urls: list[str]) -> dict:
+    try:
+        seen = json.loads(FIRST_SEEN_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        seen = None
+    if seen is None:  # first run: everything already on the list counts as old
+        seen = {u: "2000-01-01T00:00:00" for u in urls}
+    now = datetime.now().isoformat(timespec="seconds")
+    changed = False
+    for u in urls:
+        if u and u not in seen:
+            seen[u] = now
+            changed = True
+    if changed or not FIRST_SEEN_FILE.exists():
+        try:
+            FIRST_SEEN_FILE.write_text(json.dumps(seen, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
+    return seen
+
+
 def load_jobs() -> dict:
     raw = json.loads(JOBS_FILE.read_text(encoding="utf-8")) if JOBS_FILE.exists() else []
     urls = {j.get("url") for j in raw}
@@ -156,6 +180,7 @@ def load_jobs() -> dict:
     RAW[:] = raw
     DESCRIPTIONS.clear()
     by_url, by_pair = tracker_index()
+    seen = _first_seen([j.get("url", "") for j in raw])
     today = date.today()
     jobs = []
     for i, job in enumerate(raw):
@@ -182,6 +207,7 @@ def load_jobs() -> dict:
             "leadership": bool(job.get("leadership")),
             **_fit_fields(job),
             "state": job_state(ns, by_url, by_pair),  # "", "listed" or "sent"
+            "first_seen": seen.get(job.get("url", ""), ""),
         })
     scanned = datetime.fromtimestamp(JOBS_FILE.stat().st_mtime).strftime("%d/%m/%Y %H:%M") if JOBS_FILE.exists() else None
     city_district = {c: d for c, d, _ in CITIES}
@@ -194,7 +220,7 @@ def load_jobs() -> dict:
 SKILL_CACHE_FILE = ENGINE_DIR / "skill_cache.json"  # url -> skill_match.match() result; kept across scans
 SKILL_LOCK = threading.Lock()
 ENRICH = {"running": False, "done": 0, "total": 0}
-ENRICH_LIMIT = 150  # descriptions fetched per pass, most relevant titles first
+ENRICH_LIMIT = None  # every job with a relevant title (score > 0), most relevant first; ~2.4 s each
 
 
 def _load_skill_cache() -> dict:
@@ -247,6 +273,8 @@ def enrich() -> None:
             load_jobs()
         todo = [i for i in sorted(range(len(RAW)), key=lambda i: -RAW[i].get("personalized_score", 0))
                 if RAW[i].get("personalized_score", 0) > 0 and RAW[i].get("url", "") not in SKILL_CACHE][:ENRICH_LIMIT]
+        # A job whose description could not be fetched is cached with error=True and never retried in the
+        # same pass; jobs from sources with no description at all (Cal, HOT) end up there too.
         ENRICH.update(done=0, total=len(todo))
         for n, i in enumerate(todo, 1):
             if SCAN.running:  # a new scan replaces RAW; start over when it ends
@@ -620,6 +648,16 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"started": SCAN.start()})
             elif path == "/api/track":
                 self._json({"state": track(body.get("job") or {}, bool(body.get("submitted")))})
+            elif path == "/api/publish":
+                import publish_github
+                self._json({"message": publish_github.publish()})
+            elif path == "/api/cover-letter":
+                i = int(body.get("id", -1))
+                details = job_details(i, with_skills=False)
+                if not details.get("description"):
+                    raise ValueError("אין תיאור משרה, אז אי אפשר לכתוב מכתב מותאם. פתח את המשרה והדבק את התיאור בלשונית הפוסטים.")
+                import cover_letter
+                self._json(cover_letter.generate(RAW[i], details["description"]))
             elif path == "/api/application":
                 self._json(update_application(body))
             elif path == "/api/post/parse":
