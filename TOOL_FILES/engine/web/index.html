@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>חיפוש משרות</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #667085; --line: #e3e6eb;
+  --accent: #2557d6; --accent-soft: #e8eefc; --good: #137a4b; --good-soft: #e3f4ea;
+  --warn: #9a6200; --warn-soft: #fdf1dc; --bad: #b42318; --bad-soft: #fde8e6; --chip: #eef0f3;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b; --panel: #1a1f27; --text: #e6e9ef; --muted: #98a2b3; --line: #2a313c;
+    --accent: #7ea2ff; --accent-soft: #1f2a44; --good: #5fd39a; --good-soft: #163527;
+    --warn: #f0b552; --warn-soft: #3a2c12; --bad: #ff8a80; --bad-soft: #3d1d1b; --chip: #232a35;
+  }
+}
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 "Segoe UI", Arial, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line);
+  padding: 10px 16px 0; }
+.hrow { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-bottom: 8px; }
+header h1 { font-size: 18px; margin: 0 0 0 8px; }
+.meta { color: var(--muted); font-size: 13px; }
+.spacer { flex: 1; }
+button, select, input, textarea { font: inherit; color: inherit; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+a.btn { color: inherit; text-decoration: none; display: inline-block; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (prefers-color-scheme: dark) { .btn.primary { color: #0d1220; } }
+.btn:disabled { opacity: .5; cursor: default; }
+.tabs { display: flex; gap: 4px; }
+.tab { border: 0; background: none; padding: 8px 14px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 600; }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tab small { font-weight: 400; }
+.view { max-width: 1500px; margin: 0 auto; padding: 16px; }
+.grid { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } .view { padding: 12px; } header .btn { font-size: 12px; padding: 5px 8px; } }
+aside { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+  align-self: start; position: sticky; top: 104px; max-height: calc(100vh - 120px); overflow: auto; }
+@media (max-width: 860px) { aside { position: static; max-height: none; } }
+.f { margin-bottom: 14px; }
+.f > label, .f > .lbl { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+.inp { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+textarea.inp { min-height: 120px; resize: vertical; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { border: 1px solid transparent; background: var(--chip); border-radius: 999px; padding: 3px 10px; cursor: pointer; font-size: 13px; user-select: none; }
+.chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.chip small { color: var(--muted); }
+.chip.on small { color: inherit; }
+.cities { max-height: 340px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+.cities label { display: flex; gap: 6px; align-items: center; padding: 1px 0; cursor: pointer; }
+.cities label.dist { font-weight: 700; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.cities label.dist:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.cities label.city { padding-inline-start: 18px; }
+.cities label span.n { margin-inline-start: auto; color: var(--muted); font-size: 12px; }
+.check { display: flex; gap: 6px; align-items: center; cursor: pointer; margin-bottom: 4px; }
+.range { display: flex; gap: 8px; align-items: center; }
+.range input { flex: 1; }
+.link { color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.bar { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.count { font-weight: 600; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; background: var(--panel); }
+th[data-sort] { cursor: pointer; }
+th.sorted::after { content: " ▾"; }
+th.sorted.asc::after { content: " ▴"; }
+.jobtable tbody tr { cursor: pointer; }
+.jobtable tbody tr:hover td { background: var(--bg); }
+tr.sent td { opacity: .55; }
+.score { display: inline-block; min-width: 42px; text-align: center; border-radius: 6px; padding: 2px 6px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.s4 { background: var(--good-soft); color: var(--good); }
+.s3 { background: var(--accent-soft); color: var(--accent); }
+.s2 { background: var(--warn-soft); color: var(--warn); }
+.s1 { background: var(--chip); color: var(--muted); }
+.ttl { font-weight: 600; }
+.sub { color: var(--muted); font-size: 12px; }
+.tag { display: inline-block; font-size: 11px; border-radius: 4px; padding: 0 5px; margin-inline-start: 4px; background: var(--chip); color: var(--muted); }
+.tag.lead { background: var(--accent-soft); color: var(--accent); }
+.tag.listed { background: var(--warn-soft); color: var(--warn); }
+.tag.sent { background: var(--good-soft); color: var(--good); }
+.actions, .nowrap { white-space: nowrap; }
+.actions .btn { padding: 3px 8px; font-size: 12px; }
+.empty { padding: 40px; text-align: center; color: var(--muted); }
+#scanbox { margin: 16px auto; max-width: 900px; padding: 18px; }
+.progress { height: 10px; background: var(--chip); border-radius: 99px; overflow: hidden; margin: 10px 0; }
+.progress div { height: 100%; background: var(--accent); width: 0; transition: width .5s; }
+pre.log { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; max-height: 320px; overflow: auto;
+  direction: ltr; text-align: left; font-size: 12px; white-space: pre-wrap; margin: 10px 0 0; }
+#toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg);
+  padding: 8px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 30; }
+#toast.show { opacity: .95; }
+.hidden { display: none !important; }
+/* details drawer */
+#shade { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 20; }
+#drawer { position: fixed; top: 0; bottom: 0; left: 0; width: min(720px, 100%); background: var(--panel); z-index: 21;
+  border-right: 1px solid var(--line); display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,.25); }
+#drawer .dh { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+#drawer .dh h2 { margin: 0 0 4px; font-size: 18px; }
+#drawer .db { padding: 16px 18px; overflow: auto; flex: 1; }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 10px 0; font-size: 13px; }
+.facts b { color: var(--muted); font-weight: 600; }
+.why { width: auto; margin: 6px 0 14px; }
+.why td { padding: 3px 10px; border: 0; }
+.why .pos { color: var(--good); font-weight: 700; }
+.why .neg { color: var(--bad); font-weight: 700; }
+.fitcell b { display: block; }
+.fitcell .lvl { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.fitbox { display: flex; gap: 14px; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 6px 0 14px; }
+.fitbox .big { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.sk { display: inline-block; border-radius: 6px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+.sk.y { background: var(--good-soft); color: var(--good); }
+.sk.n { background: var(--bad-soft); color: var(--bad); }
+.desc { white-space: pre-wrap; line-height: 1.6; border-top: 1px solid var(--line); padding-top: 12px; unicode-bidi: plaintext; }
+/* applications */
+.apps td { vertical-align: middle; }
+.apps input.note { width: 100%; min-width: 160px; border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 4px 6px; }
+.apps input.note:hover, .apps input.note:focus { border-color: var(--line); background: var(--bg); }
+.apps select { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; background: var(--bg); }
+.apps select.yes { color: var(--good); font-weight: 700; }
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; min-width: 120px; }
+.stat b { display: block; font-size: 22px; }
+/* posts */
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; }
+@media (max-width: 960px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.pad { padding: 14px 16px; }
+.searches { display: grid; gap: 6px; }
+.searches a { display: flex; justify-content: space-between; gap: 8px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px;
+  color: var(--text); text-decoration: none; direction: ltr; text-align: left; }
+.searches a:hover { border-color: var(--accent); }
+.searches a.done { opacity: .5; }
+.cat { margin-bottom: 18px; }
+.cat h4 { margin: 0 0 8px; font-size: 14px; }
+.cat h4 small { color: var(--muted); font-weight: 400; }
+.sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.sites a { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  color: var(--text); text-decoration: none; }
+.sites a:hover { border-color: var(--accent); }
+.sites a.done { opacity: .45; }
+.sites a b::after { content: " ↗"; color: var(--muted); font-weight: 400; }
+.sites a span { color: var(--muted); font-size: 12px; direction: ltr; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+h3 { margin: 0 0 8px; font-size: 15px; }
+ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); }
+@media (max-width: 860px) {
+  #jobs thead { display: none; }
+  #rows tr { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  #rows td { border: 0; padding: 2px 10px; }
+  #rows td.c-score { grid-row: span 3; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>חיפוש משרות</h1>
+    <span class="meta" id="meta">טוען…</span>
+    <span class="spacer"></span>
+    <button class="btn primary" id="btnScan">סרוק מחדש</button>
+    <button class="btn" data-open="tracker">פתח את האקסל</button>
+    <button class="btn" data-open="manual">התאמת קו"ח ידנית</button>
+  </div>
+  <nav class="tabs">
+    <button class="tab on" data-tab="top">TOP 15</button>
+    <button class="tab" data-tab="jobs">העמקה <small id="tcJobs"></small></button>
+    <button class="tab" data-tab="apps">ההגשות שלי <small id="tcApps"></small></button>
+    <button class="tab" data-tab="posts">פוסטים בלינקדין</button>
+    <button class="tab" data-tab="careers">אתרי קריירה <small id="tcCareers"></small></button>
+  </nav>
+</header>
+
+<!-- ============ SCAN PROGRESS (all tabs) ============ -->
+<section id="scanwrap">
+  <section id="scanbox" class="panel hidden">
+    <strong id="scanTitle">סורק את כל המקורות…</strong>
+    <div class="meta" id="scanSub"></div>
+    <div class="progress"><div id="scanBar"></div></div>
+    <div class="meta" id="scanLast" dir="ltr" style="text-align:right"></div>
+    <div style="margin-top:10px; display:flex; gap:14px; flex-wrap:wrap">
+      <button class="link" id="toggleLog">הצג יומן סריקה</button>
+      <button class="link" id="showOld">הצג בינתיים את הסריקה הקודמת</button>
+    </div>
+    <pre id="log" class="log hidden"></pre>
+  </section>
+</section>
+
+<!-- ============ TOP 15 (home) ============ -->
+<section id="v-top" class="view">
+  <section class="panel" id="topPanel">
+    <div class="bar">
+      <span class="count">15 המשרות שהכי מתאימות לך</span>
+      <span class="meta" id="topMeta"></span>
+      <span class="meta" id="enrichTop"></span>
+      <span class="spacer"></span>
+      <span class="meta">דירוג לפי התאמה כוללת: תפקיד + כישורים מול קורות החיים. בלי משרות שהוגשו או הוסתרו.</span>
+    </div>
+    <div style="overflow:auto">
+      <table class="jobtable">
+        <thead><tr><th>#</th><th>התאמה</th><th>תפקיד</th><th>חברה</th><th>מיקום</th><th>פורסם</th><th>מקור</th><th></th></tr></thead>
+        <tbody id="topRows"></tbody>
+      </table>
+      <div class="empty hidden" id="topEmpty">טוען…</div>
+    </div>
+  </section>
+</section>
+
+<!-- ============ DEEP DIVE (filters) ============ -->
+<section id="v-jobs" class="hidden">
+  <div class="view grid hidden" id="app">
+    <aside>
+      <div class="f"><label for="q">חיפוש</label><input class="inp" type="search" id="q" placeholder="חברה, תפקיד, מיקום…"></div>
+      <div class="f">
+        <label for="age">מועד פרסום</label>
+        <select class="inp" id="age">
+          <option value="">הכל</option><option value="1">היום / אתמול</option><option value="3">3 ימים אחרונים</option>
+          <option value="7">שבוע אחרון</option><option value="14">שבועיים אחרונים</option>
+        </select>
+        <label class="check" style="margin-top:6px"><input type="checkbox" id="undated" checked> כולל משרות בלי תאריך</label>
+      </div>
+      <div class="f"><span class="lbl">מיקום <button class="link" id="clearCities">נקה</button></span><div class="cities" id="cities"></div></div>
+      <div class="f"><span class="lbl">התאמה מינימלית</span>
+        <div class="range"><input type="range" id="minScore" min="0" max="100" step="5" value="0"><b id="minScoreVal">0</b></div></div>
+      <div class="f"><span class="lbl">סוג תפקיד</span><label class="check"><input type="checkbox" id="leadOnly"> רק ניהול / Lead</label></div>
+      <div class="f"><span class="lbl">סטטוס</span><div class="chips" id="states"></div></div>
+      <div class="f"><span class="lbl">מקור <button class="link" id="clearSources">נקה</button></span><div class="chips" id="sources"></div></div>
+      <button class="btn" id="reset" style="width:100%">אפס את כל הסינונים</button>
+    </aside>
+    <section class="panel">
+      <div class="bar">
+        <span class="count" id="count"></span>
+        <span class="meta" id="enrich"></span>
+        <span class="spacer"></span>
+        <span class="meta">לחיצה על שורה: פרטים והתאמה לכישורים. "+ לרשימה" / "✓ הוגש" נכתבים לאקסל.</span>
+      </div>
+      <div style="overflow:auto">
+        <table id="jobs" class="jobtable">
+          <thead><tr>
+            <th data-sort="score" class="sorted" title="התאמה כוללת: חצי התאמת תפקיד (מהכותרת), חצי התאמת כישורים (מול קורות החיים)">התאמה</th><th data-sort="title">תפקיד</th><th data-sort="company">חברה</th>
+            <th data-sort="city">מיקום</th><th data-sort="age">פורסם</th><th data-sort="source">מקור</th><th></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty hidden" id="empty">אין משרות שמתאימות לסינון.</div>
+        <div class="empty" id="pickFirst">בחר מחוז או עיר (בצד ימין) כדי לראות משרות.</div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ============ APPLICATIONS ============ -->
+<section id="v-apps" class="view hidden">
+  <div class="stats" id="appStats" style="margin-bottom:14px"></div>
+  <section class="panel">
+    <div class="bar">
+      <input class="inp" type="search" id="aq" placeholder="חיפוש בהגשות…" style="max-width:280px">
+      <div class="chips" id="aStatus"></div>
+      <span class="spacer"></span>
+      <span class="meta">שינוי סטטוס או הערה נשמר מיד ב-applications.xlsx. אם האקסל פתוח, סגור אותו קודם.</span>
+    </div>
+    <div style="overflow:auto">
+      <table class="apps">
+        <thead><tr><th>נוצר</th><th>חברה</th><th>תפקיד</th><th>מיקום</th><th>הוגש?</th><th>תאריך הגשה</th><th style="width:30%">הערות</th><th></th></tr></thead>
+        <tbody id="arows"></tbody>
+      </table>
+      <div class="empty hidden" id="aempty">אין שורות.</div>
+    </div>
+  </section>
+</section>
+
+<!-- ============ LINKEDIN POSTS ============ -->
+<section id="v-posts" class="view hidden">
+  <div class="two">
+    <section class="panel pad">
+      <h3>1. חיפושים מוכנים בלינקדין</h3>
+      <div class="meta">כל חיפוש נפתח בלינקדין שלך (שם אתה מחובר), רק פוסטים מהשבוע האחרון, החדשים קודם. חיפוש שכבר פתחת מסומן באפור.</div>
+      <div style="margin:10px 0; display:flex; gap:10px; align-items:center">
+        <button class="link" id="resetDone">אפס סימון</button>
+      </div>
+      <div class="searches" id="searches"></div>
+    </section>
+    <section class="panel pad">
+      <h3>2. מצאת פוסט? הוסף אותו</h3>
+      <ol class="steps">
+        <li>בפוסט: שלוש הנקודות ← "Copy link to post", והדבק כאן.</li>
+        <li>אם אפשר, העתק גם את טקסט הפוסט. בלי טקסט אנסה למשוך אותו מהקישור.</li>
+        <li>"נתח", בדוק את השדות, ו"הוסף".</li>
+      </ol>
+      <div class="f"><label>קישור לפוסט</label><input class="inp" id="pUrl" dir="ltr" placeholder="https://www.linkedin.com/posts/..."></div>
+      <div class="f"><label>טקסט הפוסט (לא חובה)</label><textarea class="inp" id="pText" dir="auto"></textarea></div>
+      <button class="btn" id="pParse">נתח</button>
+      <div id="pForm" class="hidden" style="margin-top:14px; border-top:1px solid var(--line); padding-top:14px">
+        <div class="row2">
+          <div class="f"><label>חברה / מפרסם</label><input class="inp" id="pCompany" dir="auto"></div>
+          <div class="f"><label>תפקיד</label><input class="inp" id="pTitle" dir="auto"></div>
+          <div class="f"><label>מיקום</label><input class="inp" id="pLoc" dir="auto"></div>
+          <div class="f"><label>תאריך פרסום</label><input class="inp" type="date" id="pDate"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="pTrack" checked> גם ל-applications.xlsx (הוגש = לא)</label>
+        <div style="margin-top:8px"><button class="btn primary" id="pAdd">הוסף לרשימת המשרות</button></div>
+      </div>
+      <div class="meta" style="margin-top:14px">פוסטים שהוספת נשמרים ומופיעים בלשונית "משרות" (מקור: "פוסט (הוספת)"), גם אחרי סריקה חדשה.</div>
+    </section>
+  </div>
+</section>
+
+<!-- ============ CAREER SITES ============ -->
+<section id="v-careers" class="view hidden">
+  <section class="panel pad">
+    <h3>אתרי קריירה שהסריקה לא קוראת</h3>
+    <div class="meta">לכל חברה יש מערכת גיוס משלה שחוסמת קריאה אוטומטית. לחיצה על חברה פותחת רק את עמוד המשרות שלה בלשונית חדשה. חברה שכבר בדקת מסומנת באפור.
+      <button class="link" id="resetCareers">אפס סימון</button></div>
+    <input class="inp" type="search" id="cq" placeholder="חיפוש חברה…" style="max-width:280px; margin:12px 0">
+    <div id="sites"></div>
+  </section>
+</section>
+
+<div id="shade" class="hidden"></div>
+<div id="drawer" class="hidden" aria-modal="true" role="dialog">
+  <div class="dh">
+    <div style="display:flex; gap:10px; align-items:start">
+      <div style="flex:1"><h2 id="dTitle"></h2><div class="meta" id="dCompany"></div></div>
+      <button class="btn" id="dClose" aria-label="סגור">✕</button>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap" id="dActions"></div>
+  </div>
+  <div class="db">
+    <div class="facts" id="dFacts"></div>
+    <div class="fitbox" id="dFit"></div>
+    <h3>התאמה לכישורים שלך <span id="dSkillScore"></span></h3>
+    <div id="dSkills" class="meta">מחשב מול קורות החיים…</div>
+    <h3 style="margin-top:16px">התאמת תפקיד (מהכותרת) <span id="dScore"></span></h3>
+    <table class="why" id="dWhy"></table>
+    <h3>תיאור המשרה</h3>
+    <div class="desc" id="dDesc"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const STORE = "jobsearch.v1";
+const STATES = [["new", "חדש"], ["listed", "ברשימה"], ["sent", "הוגש"], ["hidden", "הוסתר"]];
+let DISTRICTS = [], CITY_DISTRICT = {};
+let JOBS = [], SCANNED = null, APPS = [], SEARCHES = [];
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (e) {}
+const DEF = { q: "", age: "", undated: true, cities: [], minScore: 0, leadOnly: false, states: ["new", "listed"], sources: [] };
+const F = Object.assign({ ...DEF, sort: "score", asc: false }, saved.filters || {});
+F.cities = []; delete F.top15; delete F.regions;
+const HIDDEN = new Set(saved.hidden || []);
+const DONE = new Set(saved.done || []);
+const CDONE = new Set(saved.cdone || []);
+const A = { q: "", status: "all" };
+function persist() {
+  try { localStorage.setItem(STORE, JSON.stringify({ filters: { ...F, cities: [], top15: false }, hidden: [...HIDDEN], done: [...DONE], cdone: [...CDONE] })); } catch (e) {}
+}
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3500);
+}
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || data.error && !("description" in data)) throw new Error(data.error || ("HTTP " + r.status));
+  return data;
+}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const stateOf = j => HIDDEN.has(j.url) ? "hidden" : (j.state || "new");
+const ageText = a => a == null ? "—" : a <= 0 ? "היום" : a === 1 ? "אתמול" : `לפני ${a} ימים`;
+const heDate = d => d ? d.split("-").reverse().join("/") : "";
+const scoreClass = s => s >= 75 ? "s4" : s >= 65 ? "s3" : s >= 55 ? "s2" : "s1";
+
+// ---------- tabs
+function showTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab === name));
+  ["top", "jobs", "apps", "posts", "careers"].forEach(v => $("#v-" + v).classList.toggle("hidden", v !== name));
+  if (name === "apps") loadApps();
+  if (name === "posts" && !SEARCHES.length) loadSearches();
+  if (name === "careers") loadSites();
+  try { sessionStorage.setItem("tab", name); } catch (e) {}
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => showTab(t.dataset.tab));
+
+// ---------- job filters
+function count(key) {
+  const m = new Map();
+  for (const j of JOBS) for (const v of [].concat(j[key])) m.set(v, (m.get(v) || 0) + 1);
+  return m;
+}
+function chipGroup(el, items, arr, onChange) {
+  el.innerHTML = items.map(([v, label, n]) =>
+    `<span class="chip${arr.includes(v) ? " on" : ""}" data-v="${esc(v)}">${esc(label)}${n != null ? ` <small>${n}</small>` : ""}</span>`).join("");
+  el.onclick = e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    const v = c.dataset.v, i = arr.indexOf(v);
+    i >= 0 ? arr.splice(i, 1) : arr.push(v);
+    c.classList.toggle("on"); onChange();
+  };
+}
+function buildFilters() {
+  // Cities grouped by district; each city once. A district box selects all its cities.
+  const cc = count("cities");
+  // Saved filters may name cities/sources that no longer exist (renamed labels); drop them so nothing hides silently.
+  const srcNow = new Set(JOBS.map(j => j.source));
+  for (const [arr, ok] of [[F.cities, c => cc.has(c)], [F.sources, x => srcNow.has(x)]])
+    for (let i = arr.length - 1; i >= 0; i--) if (!ok(arr[i])) arr.splice(i, 1);
+  const byD = new Map(DISTRICTS.map(d => [d, []]));
+  for (const [c, n] of [...cc].sort((a, b) => b[1] - a[1])) {
+    const d = CITY_DISTRICT[c] || "אחר";
+    if (!byD.has(d)) byD.set(d, []);
+    byD.get(d).push([c, n]);
+  }
+  $("#cities").innerHTML = [...byD].filter(([, l]) => l.length).map(([d, l]) => {
+    const on = l.filter(([c]) => F.cities.includes(c)).length;
+    const members = new Set(l.map(([c]) => c));
+    const total = JOBS.filter(j => j.cities.some(c => members.has(c))).length;  // jobs, not city mentions
+    return `<label class="dist"><input type="checkbox" data-d="${esc(d)}"${on === l.length ? " checked" : ""}${on && on < l.length ? " data-mixed" : ""}> ${esc(d)}<span class="n">${total}</span></label>`
+      + l.map(([c, n]) => `<label class="city"><input type="checkbox" value="${esc(c)}"${F.cities.includes(c) ? " checked" : ""}> ${esc(c)}<span class="n">${n}</span></label>`).join("");
+  }).join("");
+  $("#cities").querySelectorAll("[data-mixed]").forEach(x => x.indeterminate = true);
+  $("#cities").onchange = e => {
+    const t = e.target;
+    if (t.dataset.d) {
+      const members = byD.get(t.dataset.d).map(([c]) => c);
+      for (const c of members) { const i = F.cities.indexOf(c); t.checked ? (i < 0 && F.cities.push(c)) : (i >= 0 && F.cities.splice(i, 1)); }
+    } else {
+      const i = F.cities.indexOf(t.value);
+      t.checked ? (i < 0 && F.cities.push(t.value)) : (i >= 0 && F.cities.splice(i, 1));
+    }
+    buildFilters(); render();
+  };
+  const sc = [...count("source")].sort((a, b) => b[1] - a[1]);
+  chipGroup($("#sources"), sc.map(([s, n]) => [s, s, n]), F.sources, render);
+  const st = new Map(); for (const j of JOBS) st.set(stateOf(j), (st.get(stateOf(j)) || 0) + 1);
+  chipGroup($("#states"), STATES.map(([v, l]) => [v, l, st.get(v) || 0]), F.states, render);
+  $("#q").value = F.q; $("#age").value = F.age; $("#undated").checked = F.undated;
+  $("#minScore").value = F.minScore; $("#minScoreVal").textContent = F.minScore; $("#leadOnly").checked = F.leadOnly;
+}
+$("#q").oninput = e => { F.q = e.target.value; render(); };
+$("#age").onchange = e => { F.age = e.target.value; render(); };
+$("#undated").onchange = e => { F.undated = e.target.checked; render(); };
+$("#minScore").oninput = e => { F.minScore = +e.target.value; $("#minScoreVal").textContent = F.minScore; render(); };
+$("#leadOnly").onchange = e => { F.leadOnly = e.target.checked; render(); };
+$("#clearCities").onclick = () => { F.cities.length = 0; buildFilters(); render(); };
+$("#clearSources").onclick = () => { F.sources.length = 0; buildFilters(); render(); };
+$("#reset").onclick = () => { Object.assign(F, JSON.parse(JSON.stringify(DEF))); buildFilters(); render(); };
+document.querySelectorAll("th[data-sort]").forEach(th => th.onclick = () => {
+  const k = th.dataset.sort;
+  if (F.sort === k) F.asc = !F.asc; else { F.sort = k; F.asc = ["title", "company", "city", "source", "age"].includes(k); }
+  render();
+});
+
+// ---------- jobs table
+function passes(j) {
+  if (F.q) {
+    const hay = (j.title + " " + j.company + " " + j.location + " " + j.cities.join(" ")).toLowerCase();
+    if (!F.q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
+  }
+  if (F.age) { if (j.age == null ? !F.undated : j.age > +F.age) return false; }
+  else if (j.age == null && !F.undated) return false;
+  if (F.cities.length && !j.cities.some(c => F.cities.includes(c))) return false;
+  if (j.fit < F.minScore) return false;
+  if (F.leadOnly && !j.leadership) return false;
+  if (F.states.length && !F.states.includes(stateOf(j))) return false;
+  if (F.sources.length && !F.sources.includes(j.source)) return false;
+  return true;
+}
+function sortKey(j) {
+  switch (F.sort) {
+    case "title": return j.title.toLowerCase();
+    case "company": return j.company.toLowerCase();
+    case "city": return j.cities[0];
+    case "source": return j.source;
+    case "age": return j.age == null ? 9999 : j.age;
+    default: return j.fit;
+  }
+}
+function actionButtons(j, st) {
+  return `<a class="btn" href="${esc(j.url)}" target="_blank" rel="noopener">פתח</a>
+    ${st === "new" || st === "hidden" ? `<button class="btn" data-act="list">+ לרשימה</button>` : ""}
+    ${st !== "sent" ? `<button class="btn" data-act="sent">✓ הוגש</button>` : ""}
+    <button class="btn" data-act="hide">${st === "hidden" ? "החזר" : "הסתר"}</button>`;
+}
+function render() {
+  persist();
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    th.classList.toggle("sorted", th.dataset.sort === F.sort); th.classList.toggle("asc", th.dataset.sort === F.sort && F.asc);
+  });
+  let list = JOBS.filter(passes).sort((a, b) => {
+    const x = sortKey(a), y = sortKey(b);
+    const c = typeof x === "number" ? x - y : String(x).localeCompare(String(y), "he");
+    return (F.asc ? c : -c) || b.fit - a.fit;
+  });
+  const picked = F.cities.length > 0;   // deep dive stays empty until a district/city is chosen
+  if (!picked) list = [];
+  $("#pickFirst").classList.toggle("hidden", picked);
+  $("#count").textContent = picked ? `${list.length} משרות` : "";
+  $("#tcJobs").textContent = picked ? `(${list.length})` : "";
+  $("#empty").classList.toggle("hidden", !picked || list.length > 0);
+  $("#rows").innerHTML = list.map(j => rowHtml(j)).join("");
+  renderTop();
+}
+function renderTop() {
+  const top = JOBS.filter(j => ["new", "listed"].includes(stateOf(j))).sort((a, b) => b.fit - a.fit || b.score - a.score).slice(0, 15);
+  $("#topRows").innerHTML = top.map((j, i) => rowHtml(j, i + 1)).join("");
+  $("#topEmpty").classList.toggle("hidden", top.length > 0);
+  $("#topEmpty").textContent = JOBS.length ? "אין משרות." : "טוען…";
+  const scored = JOBS.filter(j => j.skill != null).length;
+  $("#topMeta").textContent = JOBS.length ? `מתוך ${JOBS.length} משרות · ${scored} עם התאמת כישורים` : "";
+}
+function rowHtml(j, rank) {
+    const st = stateOf(j);
+    const tags = (j.leadership ? `<span class="tag lead">ניהול</span>` : "")
+      + (st === "listed" ? `<span class="tag listed">ברשימה</span>` : st === "sent" ? `<span class="tag sent">הוגש</span>` : "");
+    return `<tr class="${st === "sent" ? "sent" : ""}" data-id="${j.id}">
+      ${rank ? `<td class="sub">${rank}</td>` : ""}
+      <td class="c-score fitcell" title="תפקיד ${j.score} · כישורים ${j.skill == null ? "עוד לא חושב" : j.skill + "%"}"><span class="score ${scoreClass(j.fit)}">${j.fit}</span><span class="lvl">${esc(j.fit_level)}${j.skill == null ? " · תפקיד בלבד" : ""}</span></td>
+      <td><span class="ttl">${esc(j.title)}</span>${tags}</td>
+      <td>${esc(j.company)}</td>
+      <td title="${esc(j.location)}">${esc(j.cities.join(", "))}<div class="sub">${esc(j.regions.join(" · "))}</div></td>
+      <td class="nowrap" title="${esc(j.updated)}">${ageText(j.age)}<div class="sub">${heDate(j.updated)}</div></td>
+      <td><span class="sub">${esc(j.source)}</span></td>
+      <td class="actions">${actionButtons(j, st)}</td></tr>`;
+}
+async function act(j, action, btn) {
+  if (action === "hide") {
+    HIDDEN.has(j.url) ? HIDDEN.delete(j.url) : HIDDEN.add(j.url);
+    buildFilters(); render(); if (OPEN === j) openDrawer(j, true); return;
+  }
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api("/api/track", { job: j, submitted: action === "sent" });
+    j.state = r.state; HIDDEN.delete(j.url); APPS = [];
+    toast(r.state === "sent" ? `סומן כהוגש: ${j.company}` : `נוסף ל-applications.xlsx: ${j.company}`);
+    buildFilters(); render(); if (OPEN === j) openDrawer(j, true);
+  } catch (err) { toast(err.message); if (btn) btn.disabled = false; }
+}
+$("#rows").onclick = $("#topRows").onclick = e => {
+  if (e.target.closest("a")) return;
+  const tr = e.target.closest("tr"); if (!tr) return;
+  const j = JOBS.find(x => x.id === +tr.dataset.id);
+  const b = e.target.closest("button[data-act]");
+  if (b) act(j, b.dataset.act, b); else openDrawer(j);
+};
+
+// ---------- details drawer
+let OPEN = null;
+async function openDrawer(j, keepBody) {
+  OPEN = j;
+  $("#shade").classList.remove("hidden"); $("#drawer").classList.remove("hidden");
+  $("#dTitle").textContent = j.title;
+  $("#dCompany").textContent = j.company;
+  const st = stateOf(j);
+  $("#dActions").innerHTML = actionButtons(j, st).replace('class="btn"', 'class="btn primary"');
+  $("#dFacts").innerHTML = [
+    ["מיקום", j.location || "—"], ["מחוז", j.regions.join(" · ")], ["פורסם", `${ageText(j.age)} ${j.updated ? "(" + heDate(j.updated) + ")" : ""}`],
+    ["מקור", j.source], ["סטטוס", STATES.find(s => s[0] === st)[1]],
+  ].map(([k, v]) => `<b>${k}</b><span>${esc(v)}</span>`).join("");
+  $("#dScore").innerHTML = `<span class="score s1">${j.score}</span>`;
+  renderFit(j);
+  if (keepBody) return;
+  $("#dSkills").textContent = "מחשב מול קורות החיים…"; $("#dSkillScore").innerHTML = "";
+  $("#dWhy").innerHTML = ""; $("#dDesc").textContent = "טוען את תיאור המשרה…";
+  try {
+    const d = await api("/api/job?id=" + j.id);
+    if (OPEN !== j) return;
+    $("#dWhy").innerHTML = (d.reasons.length ? d.reasons : [["אין התאמה לפרופיל", 0]]).map(([k, v]) =>
+      `<tr><td>${esc(k)}</td><td class="${v == null ? "neg" : v >= 0 ? "pos" : "neg"}">${v == null ? "עצירה" : (v > 0 ? "+" : "") + v}</td></tr>`).join("")
+      + (d.matched && d.matched.length ? `<tr><td class="sub" colspan="2">מילות מפתח שזוהו בכותרת: ${esc(d.matched.join(", "))}</td></tr>` : "")
+      + `<tr><td class="sub" colspan="2">הציון מחושב מכותרת המשרה בלבד (תפקיד, תחום, בכירות, מיקום).</td></tr>`;
+    $("#dDesc").textContent = d.description || d.error || "אין תיאור.";
+    if (d.skills) {
+      Object.assign(j, { skill: d.skill, fit: d.fit, fit_level: d.fit_level, years: d.years });
+      renderFit(j); render();
+      const m = d.skills;
+      $("#dSkillScore").innerHTML = m.score == null ? "" : `<span class="score ${scoreClass(m.score)}">${m.score}%</span>`;
+      $("#dSkills").innerHTML = m.score == null ? "לא זוהו בתיאור כישורים מוגדרים."
+        : (m.have.length ? `<div>יש לך: ${m.have.map(x => `<span class="sk y">✓ ${esc(x)}</span>`).join("")}</div>` : "")
+        + (m.missing.length ? `<div style="margin-top:4px">חסר בקורות החיים: ${m.missing.map(x => `<span class="sk n">✗ ${esc(x)}</span>`).join("")}</div>` : `<div style="margin-top:4px">כל מה שזוהה בתיאור מופיע בקורות החיים שלך.</div>`)
+        + (m.years ? `<div style="margin-top:6px">דורש ${m.years}+ שנות ניסיון${m.years > 5 ? " — יותר מה-4+ שבקורות החיים שלך" : ""}.</div>` : "");
+    } else if (d.error) { $("#dSkills").textContent = "אין תיאור, אז אין התאמת כישורים. הציון מבוסס על הכותרת בלבד."; }
+  } catch (err) { if (OPEN === j) $("#dDesc").textContent = err.message; }
+}
+function renderFit(j) {
+  $("#dFit").innerHTML = `<span class="big">${j.fit}</span><div><b>התאמה ${esc(j.fit_level)}</b>
+    <div class="meta">תפקיד ${j.score} · כישורים ${j.skill == null ? "עוד לא חושב" : j.skill + "%"}</div></div>`;
+}
+function closeDrawer() { OPEN = null; $("#shade").classList.add("hidden"); $("#drawer").classList.add("hidden"); }
+$("#dClose").onclick = closeDrawer; $("#shade").onclick = closeDrawer;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+$("#dActions").onclick = e => { const b = e.target.closest("button[data-act]"); if (b && OPEN) act(OPEN, b.dataset.act, b); };
+
+// ---------- applications tab
+async function loadApps(force) {
+  if (APPS.length && !force) return renderApps();
+  $("#arows").innerHTML = `<tr><td colspan="8" class="empty">טוען…</td></tr>`;
+  try { APPS = (await api("/api/applications")).rows; renderApps(); }
+  catch (e) { $("#arows").innerHTML = `<tr><td colspan="8" class="empty">${esc(e.message)}</td></tr>`; }
+}
+function renderApps() {
+  const sent = APPS.filter(r => r.status === "כן").length;
+  $("#tcApps").textContent = `(${APPS.length})`;
+  const last7 = APPS.filter(r => r.status === "כן" && r.submitted_on && (Date.now() - new Date(r.submitted_on)) / 864e5 <= 7).length;
+  $("#appStats").innerHTML = [["בקובץ", APPS.length], ["הוגשו", sent], ["עוד לא הוגשו", APPS.length - sent], ["הוגשו השבוע", last7]]
+    .map(([k, v]) => `<div class="stat"><b>${v}</b><span class="meta">${k}</span></div>`).join("");
+  const opts = [["all", "הכל", APPS.length], ["no", "עוד לא הוגש", APPS.length - sent], ["yes", "הוגש", sent]];
+  $("#aStatus").innerHTML = opts.map(([v, l, n]) => `<span class="chip${A.status === v ? " on" : ""}" data-v="${v}">${l} <small>${n}</small></span>`).join("");
+  const words = A.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const list = APPS.filter(r => (A.status === "all" || (A.status === "yes") === (r.status === "כן"))
+    && words.every(w => (r.company + " " + r.title + " " + r.location + " " + r.note).toLowerCase().includes(w)))
+    .sort((a, b) => (b.created || "").localeCompare(a.created || "") || b.row - a.row);
+  $("#aempty").classList.toggle("hidden", list.length > 0);
+  $("#arows").innerHTML = list.map(r => `<tr data-row="${r.row}">
+    <td class="nowrap">${heDate(r.created)}</td>
+    <td>${esc(r.company)}</td>
+    <td><span class="ttl">${esc(r.title)}</span></td>
+    <td class="sub">${esc(r.location)}</td>
+    <td><select class="${r.status === "כן" ? "yes" : ""}"><option${r.status === "כן" ? " selected" : ""}>כן</option><option${r.status !== "כן" ? " selected" : ""}>לא</option></select></td>
+    <td class="nowrap sub">${esc(heDate(r.submitted_on) || r.submitted_on)}</td>
+    <td><input class="note" dir="auto" value="${esc(r.note)}" placeholder="הוסף הערה…"></td>
+    <td>${r.url ? `<a class="btn" style="padding:3px 8px;font-size:12px" href="${esc(r.url)}" target="_blank" rel="noopener">פתח</a>` : ""}</td>
+  </tr>`).join("");
+}
+$("#aq").oninput = e => { A.q = e.target.value; renderApps(); };
+$("#aStatus").onclick = e => { const c = e.target.closest(".chip"); if (c) { A.status = c.dataset.v; renderApps(); } };
+async function saveApp(tr, change) {
+  const r = APPS.find(x => x.row === +tr.dataset.row);
+  try {
+    const res = await api("/api/application", { row: r.row, company: r.company, title: r.title, ...change });
+    Object.assign(r, change, { submitted_on: res.submitted_on });
+    toast("נשמר באקסל"); renderApps();
+    const j = JOBS.find(x => x.url && x.url === r.url);
+    if (j && change.status) { j.state = change.status === "כן" ? "sent" : "listed"; buildFilters(); render(); }
+  } catch (e) { toast(e.message); renderApps(); }
+}
+$("#arows").onchange = e => {
+  const tr = e.target.closest("tr");
+  if (e.target.tagName === "SELECT") saveApp(tr, { status: e.target.value });
+  else if (e.target.classList.contains("note")) saveApp(tr, { note: e.target.value });
+};
+$("#arows").onkeydown = e => { if (e.key === "Enter" && e.target.classList.contains("note")) e.target.blur(); };
+
+// ---------- LinkedIn posts tab
+async function loadSearches() {
+  SEARCHES = (await api("/api/post-searches")).searches;
+  renderSearches();
+}
+function renderSearches() {
+  $("#searches").innerHTML = SEARCHES.map(s =>
+    `<a href="${esc(s.url)}" target="_blank" rel="noopener" class="${DONE.has(s.query) ? "done" : ""}" data-q="${esc(s.query)}"><span dir="auto">${esc(s.query)}</span><span>↗</span></a>`).join("");
+}
+$("#searches").onclick = e => { const a = e.target.closest("a"); if (a) { DONE.add(a.dataset.q); persist(); setTimeout(renderSearches, 50); } };
+$("#resetDone").onclick = () => { DONE.clear(); persist(); renderSearches(); };
+let PARSED = null;
+$("#pParse").onclick = async () => {
+  const url = $("#pUrl").value.trim(), text = $("#pText").value.trim();
+  if (!url && !text) return toast("הדבק קישור או טקסט של פוסט");
+  $("#pParse").disabled = true; $("#pParse").textContent = "מנתח…";
+  try {
+    PARSED = await api("/api/post/parse", { url, text });
+    $("#pCompany").value = PARSED.company; $("#pTitle").value = PARSED.title;
+    $("#pLoc").value = PARSED.location; $("#pDate").value = PARSED.updated;
+    $("#pForm").classList.remove("hidden");
+    if (!PARSED.fetched) toast("לא הצלחתי למשוך את הפוסט מהקישור. מלא את השדות ידנית, או הדבק את הטקסט.");
+  } catch (e) { toast(e.message); }
+  $("#pParse").disabled = false; $("#pParse").textContent = "נתח";
+};
+$("#pAdd").onclick = async () => {
+  const entry = { url: $("#pUrl").value.trim(), company: $("#pCompany").value, title: $("#pTitle").value,
+    location: $("#pLoc").value, updated: $("#pDate").value, text: (PARSED && PARSED.text) || $("#pText").value, track: $("#pTrack").checked };
+  if (!entry.url) return toast("חסר קישור לפוסט");
+  try {
+    await api("/api/post/add", entry);
+    toast(`נוסף: ${entry.company} · ${entry.title}`);
+    $("#pUrl").value = ""; $("#pText").value = ""; $("#pForm").classList.add("hidden"); PARSED = null; APPS = [];
+    await loadJobs();
+  } catch (e) { toast(e.message); }
+};
+
+// ---------- career sites tab
+let SITES = [];
+async function loadSites() {
+  try { if (!SITES.length) SITES = (await api("/api/career-sites")).sites; }
+  catch (e) { $("#sites").innerHTML = `<div class="empty">לא הצלחתי לטעון את רשימת החברות (${esc(e.message)}). רענן את הדף בעוד כמה שניות.</div>`; return; }
+  renderSites();
+}
+function renderSites() {
+  const q = $("#cq").value.trim().toLowerCase();
+  $("#tcCareers").textContent = `(${SITES.length})`;
+  const list = SITES.filter(s => !q || (s.name + " " + s.name_he + " " + s.category).toLowerCase().includes(q));
+  const groups = [];
+  for (const s of list) { let g = groups.find(g => g.cat === s.category); if (!g) groups.push(g = { cat: s.category, items: [] }); g.items.push(s); }
+  $("#sites").innerHTML = groups.map(g => `<div class="cat"><h4>${esc(g.cat)} <small>${g.items.length}</small></h4><div class="sites">`
+    + g.items.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener" class="${CDONE.has(s.name) ? "done" : ""}" data-n="${esc(s.name)}"><b>${esc(s.name_he)}</b><span>${esc(s.name_he !== s.name ? s.name + " · " : "")}${esc(s.url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0])}</span></a>`).join("")
+    + `</div></div>`).join("") || `<div class="empty">אין חברות שמתאימות לחיפוש.</div>`;
+}
+$("#sites").onclick = e => { const a = e.target.closest("a"); if (a) { CDONE.add(a.dataset.n); persist(); setTimeout(renderSites, 50); } };
+$("#cq").oninput = renderSites;
+$("#resetCareers").onclick = () => { CDONE.clear(); persist(); renderSites(); };
+
+// ---------- skill-fit progress (server scores descriptions in the background)
+let enrichWas = false;
+async function pollEnrich() {
+  try {
+    const s = await api("/api/skills");
+    if (s.running) {
+      $("#enrich").textContent = $("#enrichTop").textContent = `מחשב התאמה לכישורים: ${s.done}/${s.total} (הדירוג יתעדכן)`;
+      enrichWas = true;
+      if (s.done % 10 === 0 && JOBS.length) refreshFits();
+    } else {
+      $("#enrich").textContent = $("#enrichTop").textContent = "";
+      if (enrichWas) { enrichWas = false; refreshFits(); }
+    }
+  } catch (e) {}
+  setTimeout(pollEnrich, 4000);
+}
+async function refreshFits() {
+  try {
+    const d = await api("/api/jobs");
+    const byId = new Map(d.jobs.map(x => [x.url, x]));
+    for (const j of JOBS) { const n = byId.get(j.url); if (n) Object.assign(j, { skill: n.skill, fit: n.fit, fit_level: n.fit_level, years: n.years }); }
+    render();
+  } catch (e) {}
+}
+pollEnrich();
+
+// ---------- data + scan
+async function loadJobs() {
+  const d = await api("/api/jobs");
+  JOBS = d.jobs; SCANNED = d.scanned_at; DISTRICTS = d.districts || []; CITY_DISTRICT = d.city_district || {};
+  $("#meta").textContent = SCANNED ? `סריקה אחרונה: ${SCANNED} · ${JOBS.length} משרות` : "עוד לא נסרק";
+  buildFilters(); render();
+  $("#app").classList.remove("hidden"); $("#topPanel").classList.remove("hidden");
+}
+let showingOld = false, wasRunning = false;
+async function poll() {
+  let s;
+  try { s = await api("/api/status"); } catch (e) { $("#meta").textContent = "השרת לא עונה. הפעל שוב את START.bat"; return setTimeout(poll, 5000); }
+  const box = $("#scanbox");
+  if (s.running) {
+    wasRunning = true;
+    box.classList.remove("hidden"); $("#btnScan").disabled = true;
+    $("#scanBar").style.width = Math.min(97, 100 * s.elapsed / Math.max(60, s.expected)) + "%";
+    const left = Math.ceil((s.expected - s.elapsed) / 60);
+    $("#scanTitle").textContent = "סורק את כל המקורות…";
+    if (!SCANNED) $("#meta").textContent = "סריקה רצה";
+    $("#scanSub").textContent = `${Math.floor(s.elapsed / 60)}:${String(s.elapsed % 60).padStart(2, "0")} עברו · ` + (left >= 1 ? `עוד כ-${left} דק'` : "כמעט סיום…");
+    $("#scanLast").textContent = s.log.filter(l => l.trim()).slice(-1)[0] || "";
+    $("#log").textContent = s.log.join("\n");
+    if (!showingOld) { $("#app").classList.add("hidden"); $("#topPanel").classList.add("hidden"); }
+    $("#showOld").classList.toggle("hidden", showingOld);
+    setTimeout(poll, 2000);
+  } else {
+    $("#btnScan").disabled = false;
+    if (wasRunning) {
+      wasRunning = false; showingOld = false;
+      if (s.rc === 0) { box.classList.add("hidden"); toast("הסריקה הסתיימה"); await loadJobs(); }
+      else {
+        $("#scanTitle").textContent = "הסריקה נכשלה, הרשימה לא עודכנה";
+        $("#scanSub").textContent = "הפרטים ביומן למטה. אפשר ללחוץ שוב על 'סרוק מחדש'.";
+        $("#scanBar").style.width = "0"; $("#log").classList.remove("hidden"); $("#showOld").classList.remove("hidden");
+      }
+    } else if ($("#app").classList.contains("hidden") && box.classList.contains("hidden")) {
+      await loadJobs();
+    }
+    setTimeout(poll, 15000);  // also the keep-alive ping
+  }
+}
+$("#btnScan").onclick = async () => {
+  if (!confirm("סריקה מלאה לוקחת כ-10 דקות. להתחיל?")) return;
+  await api("/api/scan", {}); showingOld = false; showTab("jobs"); poll();
+};
+$("#toggleLog").onclick = () => { $("#log").classList.toggle("hidden"); $("#toggleLog").textContent = $("#log").classList.contains("hidden") ? "הצג יומן סריקה" : "הסתר יומן"; };
+$("#showOld").onclick = async () => { showingOld = true; $("#showOld").classList.add("hidden"); await loadJobs(); };
+document.querySelectorAll("[data-open]").forEach(b => b.onclick = async () => {
+  try { toast((await api("/api/open", { what: b.dataset.open })).message); } catch (e) { toast(e.message); }
+});
+poll();
+try { const t = sessionStorage.getItem("tab"); if (t && t !== "top" && $("#v-" + t)) showTab(t); } catch (e) {}
+</script>
+</body>
+</html>

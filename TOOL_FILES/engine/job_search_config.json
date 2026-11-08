@@ -1,0 +1,1070 @@
+{
+  "_comment": "Edit this file to change what find_jobs.py looks for. Greenhouse/Lever/Ashby slugs are the name in the board URL, e.g. https://job-boards.greenhouse.io/forter -> 'forter'. A Comeet slug is both halves of its public board URL, e.g. https://www.comeet.com/jobs/thetaray/72.00F -> 'thetaray/72.00F'. Run find_jobs.py --verify to see which ones actually resolve. A Workday slug is tenant/wdN/site from the careers URL, e.g. https://intel.wd1.myworkdayjobs.com/External -> 'intel/wd1/External'. SmartRecruiters slug = company id (wix2). Lever EU boards: 'eu:<slug>'. SuccessFactors: 'host/companyId', e.g. 'career2.successfactors.eu/1080030P'.",
+  "title_keywords": [
+    "data",
+    "analytics",
+    "engineer",
+    "scientist",
+    "bi ",
+    "intelligence",
+    "platform",
+    "נתונים",
+    "דאטה",
+    "אנליסט",
+    "אנליטיק",
+    "מודיעין עסקי",
+    "בינה עסקית",
+    "מדען",
+    "סטטיסט",
+    "statistic"
+  ],
+  "leadership_keywords": [
+    "lead",
+    "manager",
+    "head of",
+    "director",
+    "principal",
+    "staff",
+    "ראש צוות",
+    "ר\"צ",
+    "מנהל",
+    "ראש תחום",
+    "ראש מחלקה",
+    "ראש מחלקת"
+  ],
+  "exclude_title_keywords": [
+    "financial analyst",
+    "fp&a",
+    "marketing analyst",
+    "sales analyst",
+    "gtm analyst",
+    "recruiter",
+    "people analyst",
+    "hr ",
+    "legal",
+    "intern",
+    "student",
+    "account executive",
+    "customer success",
+    "solutions consultant",
+    "sales development",
+    "סטודנט",
+    "מתמחה",
+    "משאבי אנוש",
+    "גיוס",
+    "מכירות"
+  ],
+  "_locations_comment": "Only Jerusalem, Gush Dan and Modi'in (asked 2026-10-02). Substring match, English + Hebrew. A bare 'Israel' or 'Center District' no longer passes. exclude_locations cuts out look-alikes before matching.",
+  "locations": [
+    "tel aviv",
+    "tel-aviv",
+    "tlv",
+    "jaffa",
+    "ramat gan",
+    "ramat-gan",
+    "givatayim",
+    "giv'atayim",
+    "bnei brak",
+    "bnei-brak",
+    "holon",
+    "bat yam",
+    "bat-yam",
+    "petah tikva",
+    "petach tikva",
+    "petah-tikva",
+    "petach-tikva",
+    "petah tiqva",
+    "rishon",
+    "kiryat ono",
+    "kiryat-ono",
+    "or yehuda",
+    "yehud",
+    "givat shmuel",
+    "ramat hasharon",
+    "herzliya",
+    "herzliyya",
+    "rosh haayin",
+    "rosh ha'ayin",
+    "airport city",
+    "ben gurion airport",
+    "azor",
+    "savyon",
+    "ganei tikva",
+    "jerusalem",
+    "mevaseret",
+    "modiin",
+    "modi'in",
+    "modi’in",
+    "shoham",
+    "תל אביב",
+    "תל-אביב",
+    "יפו",
+    "רמת גן",
+    "רמת-גן",
+    "גבעתיים",
+    "בני ברק",
+    "חולון",
+    "בת ים",
+    "פתח תקווה",
+    "פתח תקוה",
+    "ראשון לציון",
+    "קריית אונו",
+    "קרית אונו",
+    "אור יהודה",
+    "יהוד",
+    "גבעת שמואל",
+    "רמת השרון",
+    "הרצליה",
+    "ראש העין",
+    "איירפורט סיטי",
+    "קרית שדה התעופה",
+    "נמל תעופה בן-גוריון",
+    "סביון",
+    "גני תקווה",
+    "ירושלים",
+    "מבשרת",
+    "מודיעין",
+    "שוהם",
+    "גוש דן"
+  ],
+  "exclude_locations": [
+    "מודיעין עילית",
+    "modiin illit",
+    "modi'in illit",
+    "אבן יהודה",
+    "even yehuda",
+    "יהודה ושומרון",
+    "תל מונד",
+    "tel mond"
+  ],
+  "include_bare_remote": false,
+  "_max_age_comment": "Drop postings older than this many days (by posted/updated date). LinkedIn is searched with this window directly; Drushim and ATS boards are filtered after the scan. Postings with no date (Lever, Workday) are kept.",
+  "max_age_days": 12,
+  "_not_covered": "Checked 2026-10-02 and still invisible (own JS career sites or bot walls): Amdocs, Cellebrite, Verint, HiBob, Sapiens, Elbit, Verbit, Check Point, Nayax, BigPanda (no Israel roles), Max, Isracard, Cal, Bezeq, Partner, Cellcom, HOT, Maccabi, Clalit, Sheba, Mekorot, Keshet, Delta Galil, Strauss, Shufersal, El Al, ZIM, Matrix, Malam Team, Ness, IEC, Rafael, IAI, Israel Railways, Israel Post. Most of them post on LinkedIn/Drushim/AllJobs, which the scan covers. Indeed and Glassdoor block scraping.",
+  "_verified_on": "2026-10-02 — all company slugs, LinkedIn, LinkedIn posts (Yahoo), Drushim, AllJobs, JobMaster, civil service and gov.il answered on this date.",
+  "companies": [
+    {
+      "name": "Forter",
+      "ats": "greenhouse",
+      "slug": "forter"
+    },
+    {
+      "name": "Similarweb",
+      "ats": "greenhouse",
+      "slug": "similarweb"
+    },
+    {
+      "name": "Riskified",
+      "ats": "greenhouse",
+      "slug": "riskified"
+    },
+    {
+      "name": "Payoneer",
+      "ats": "greenhouse",
+      "slug": "payoneer"
+    },
+    {
+      "name": "Melio",
+      "ats": "greenhouse",
+      "slug": "melio"
+    },
+    {
+      "name": "Pagaya",
+      "ats": "greenhouse",
+      "slug": "pagaya"
+    },
+    {
+      "name": "Capitolis",
+      "ats": "greenhouse",
+      "slug": "capitolis"
+    },
+    {
+      "name": "Taboola",
+      "ats": "greenhouse",
+      "slug": "taboola"
+    },
+    {
+      "name": "Via",
+      "ats": "greenhouse",
+      "slug": "via"
+    },
+    {
+      "name": "JFrog",
+      "ats": "greenhouse",
+      "slug": "jfrog"
+    },
+    {
+      "name": "Axonius",
+      "ats": "greenhouse",
+      "slug": "axonius"
+    },
+    {
+      "name": "AppsFlyer",
+      "ats": "greenhouse",
+      "slug": "appsflyer"
+    },
+    {
+      "name": "Armis",
+      "ats": "greenhouse",
+      "slug": "armissecurity"
+    },
+    {
+      "name": "Gong",
+      "ats": "greenhouse",
+      "slug": "gongio"
+    },
+    {
+      "name": "Lightricks",
+      "ats": "greenhouse",
+      "slug": "lightricks"
+    },
+    {
+      "name": "Sisense",
+      "ats": "ashby",
+      "slug": "sisense"
+    },
+    {
+      "name": "Torq",
+      "ats": "greenhouse",
+      "slug": "torq"
+    },
+    {
+      "name": "Wiz",
+      "ats": "greenhouse",
+      "slug": "wizinc"
+    },
+    {
+      "name": "Yotpo",
+      "ats": "greenhouse",
+      "slug": "yotpo"
+    },
+    {
+      "name": "BioCatch",
+      "ats": "lever",
+      "slug": "biocatch"
+    },
+    {
+      "name": "WalkMe",
+      "ats": "lever",
+      "slug": "walkme"
+    },
+    {
+      "name": "Cato Networks",
+      "ats": "greenhouse",
+      "slug": "catonetworks"
+    },
+    {
+      "name": "Transmit Security",
+      "ats": "greenhouse",
+      "slug": "transmitsecurity"
+    },
+    {
+      "name": "Fireblocks",
+      "ats": "greenhouse",
+      "slug": "fireblocks"
+    },
+    {
+      "name": "Aidoc",
+      "ats": "greenhouse",
+      "slug": "aidocmedical"
+    },
+    {
+      "name": "Tipalti",
+      "ats": "greenhouse",
+      "slug": "tipaltisolutions"
+    },
+    {
+      "name": "Cymulate",
+      "ats": "greenhouse",
+      "slug": "cymulate"
+    },
+    {
+      "name": "Descope",
+      "ats": "greenhouse",
+      "slug": "descope"
+    },
+    {
+      "name": "Augury",
+      "ats": "greenhouse",
+      "slug": "augury"
+    },
+    {
+      "name": "Optimove",
+      "ats": "greenhouse",
+      "slug": "optimove"
+    },
+    {
+      "name": "Salt Security",
+      "ats": "greenhouse",
+      "slug": "saltsecurity"
+    },
+    {
+      "name": "Orca Security",
+      "ats": "greenhouse",
+      "slug": "orcasecurity"
+    },
+    {
+      "name": "Bringg",
+      "ats": "greenhouse",
+      "slug": "bringg"
+    },
+    {
+      "name": "Cybereason",
+      "ats": "greenhouse",
+      "slug": "cybereason"
+    },
+    {
+      "name": "Lightrun",
+      "ats": "greenhouse",
+      "slug": "lightrun"
+    },
+    {
+      "name": "K Health",
+      "ats": "greenhouse",
+      "slug": "khealthcareers"
+    },
+    {
+      "name": "Moon Active",
+      "ats": "ashby",
+      "slug": "moonactive"
+    },
+    {
+      "name": "Nexxen",
+      "ats": "ashby",
+      "slug": "nexxen"
+    },
+    {
+      "name": "Singular",
+      "ats": "ashby",
+      "slug": "singular"
+    },
+    {
+      "name": "Unit",
+      "ats": "ashby",
+      "slug": "unit"
+    },
+    {
+      "name": "Finout",
+      "ats": "ashby",
+      "slug": "finout"
+    },
+    {
+      "name": "Redis",
+      "ats": "ashby",
+      "slug": "redis"
+    },
+    {
+      "name": "Oligo Security",
+      "ats": "ashby",
+      "slug": "oligo"
+    },
+    {
+      "name": "Cyera",
+      "ats": "comeet",
+      "slug": "cyera/17.008"
+    },
+    {
+      "name": "Cognyte",
+      "ats": "comeet",
+      "slug": "cognyte/F2.009"
+    },
+    {
+      "name": "Immunai",
+      "ats": "comeet",
+      "slug": "immunai/37.009"
+    },
+    {
+      "name": "ThetaRay",
+      "ats": "comeet",
+      "slug": "thetaray/72.00F"
+    },
+    {
+      "name": "Bizzabo",
+      "ats": "comeet",
+      "slug": "bizzabo/A5.000"
+    },
+    {
+      "name": "Firebolt",
+      "ats": "comeet",
+      "slug": "firebolt/26.004"
+    },
+    {
+      "name": "Explorium",
+      "ats": "comeet",
+      "slug": "explorium/B4.00E"
+    },
+    {
+      "name": "Snyk",
+      "ats": "ashby",
+      "slug": "snyk"
+    },
+    {
+      "name": "SentinelOne",
+      "ats": "greenhouse",
+      "slug": "sentinellabs"
+    },
+    {
+      "name": "Papaya Global",
+      "ats": "comeet",
+      "slug": "papayaglobal/16.005"
+    },
+    {
+      "name": "Outbrain",
+      "ats": "greenhouse",
+      "slug": "outbraininc"
+    },
+    {
+      "name": "VAST Data",
+      "ats": "greenhouse",
+      "slug": "vast"
+    },
+    {
+      "name": "NICE Actimize",
+      "ats": "greenhouse",
+      "slug": "nice"
+    },
+    {
+      "name": "Perion",
+      "ats": "greenhouse",
+      "slug": "perionnetworkltd"
+    },
+    {
+      "name": "Mobileye",
+      "ats": "lever",
+      "slug": "eu:mobileye"
+    },
+    {
+      "name": "Playtika",
+      "ats": "greenhouse",
+      "slug": "playtikaltd"
+    },
+    {
+      "name": "Placer.ai",
+      "ats": "greenhouse",
+      "slug": "placerlabs"
+    },
+    {
+      "name": "Aqua Security",
+      "ats": "comeet",
+      "slug": "aquasec/91.001"
+    },
+    {
+      "name": "Claroty",
+      "ats": "comeet",
+      "slug": "claroty/F2.004"
+    },
+    {
+      "name": "Innovid",
+      "ats": "greenhouse",
+      "slug": "innovid"
+    },
+    {
+      "name": "Groupon",
+      "ats": "greenhouse",
+      "slug": "groupon"
+    },
+    {
+      "name": "Intel",
+      "ats": "workday",
+      "slug": "intel/wd1/External"
+    },
+    {
+      "name": "NVIDIA",
+      "ats": "workday",
+      "slug": "nvidia/wd5/NVIDIAExternalCareerSite"
+    },
+    {
+      "name": "Applied Materials",
+      "ats": "workday",
+      "slug": "amat/wd1/External"
+    },
+    {
+      "name": "Mastercard",
+      "ats": "workday",
+      "slug": "mastercard/wd1/CorporateCareers"
+    },
+    {
+      "name": "Salesforce",
+      "ats": "workday",
+      "slug": "salesforce/wd12/External_Career_Site"
+    },
+    {
+      "name": "HP",
+      "ats": "workday",
+      "slug": "hp/wd5/ExternalCareerSite"
+    },
+    {
+      "name": "Motorola Solutions",
+      "ats": "workday",
+      "slug": "motorolasolutions/wd5/Careers"
+    },
+    {
+      "name": "Philips",
+      "ats": "workday",
+      "slug": "philips/wd3/jobs-and-careers"
+    },
+    {
+      "name": "Cisco",
+      "ats": "workday",
+      "slug": "cisco/wd5/cisco_careers"
+    },
+    {
+      "name": "KLA",
+      "ats": "workday",
+      "slug": "kla/wd1/Search"
+    },
+    {
+      "name": "Medtronic",
+      "ats": "workday",
+      "slug": "medtronic/wd1/medtroniccareers"
+    },
+    {
+      "name": "Marvell",
+      "ats": "workday",
+      "slug": "marvell/wd1/marvellcareers"
+    },
+    {
+      "name": "monday.com",
+      "ats": "ashby",
+      "slug": "monday.com"
+    },
+    {
+      "name": "Wix",
+      "ats": "smartrecruiters",
+      "slug": "wix2"
+    },
+    {
+      "name": "eToro",
+      "ats": "comeet",
+      "slug": "etoro/41.009"
+    },
+    {
+      "name": "Rapyd",
+      "ats": "comeet",
+      "slug": "rapyd/73.00E"
+    },
+    {
+      "name": "Fiverr",
+      "ats": "comeet",
+      "slug": "fiverr/60.002"
+    },
+    {
+      "name": "Earnix",
+      "ats": "comeet",
+      "slug": "earnix/93.00B"
+    },
+    {
+      "name": "Bright Data",
+      "ats": "comeet",
+      "slug": "brightdata/88.007"
+    },
+    {
+      "name": "Coralogix",
+      "ats": "comeet",
+      "slug": "coralogix/06.004"
+    },
+    {
+      "name": "Personetics",
+      "ats": "comeet",
+      "slug": "personetics/83.00A"
+    },
+    {
+      "name": "Silverfort",
+      "ats": "comeet",
+      "slug": "silverfort/54.007"
+    },
+    {
+      "name": "Kaltura",
+      "ats": "comeet",
+      "slug": "kaltura/E2.00D"
+    },
+    {
+      "name": "Gloat",
+      "ats": "comeet",
+      "slug": "gloat/E5.000"
+    },
+    {
+      "name": "Lusha",
+      "ats": "comeet",
+      "slug": "lusha/73.00B"
+    },
+    {
+      "name": "Pentera",
+      "ats": "comeet",
+      "slug": "pentera/C5.00D"
+    },
+    {
+      "name": "Nova",
+      "ats": "comeet",
+      "slug": "nova/A5.007"
+    },
+    {
+      "name": "Mentee Robotics",
+      "ats": "comeet",
+      "slug": "mentee_robotics/6A.002"
+    },
+    {
+      "name": "Unity",
+      "ats": "workday",
+      "slug": "unitytech/wd1/Unity"
+    },
+    {
+      "name": "Palo Alto Networks (CyberArk)",
+      "ats": "workday",
+      "slug": "paloaltonetworks/wd5/panwexternalcareers"
+    },
+    {
+      "name": "Teva",
+      "ats": "successfactors",
+      "slug": "career2.successfactors.eu/1080030P"
+    },
+    {
+      "name": "Tower Semiconductor",
+      "ats": "successfactors",
+      "slug": "career2.successfactors.eu/towersemic"
+    },
+    {
+      "name": "ICL",
+      "ats": "successfactors",
+      "slug": "career2.successfactors.eu/ICLPROD"
+    },
+    {
+      "name": "Check Point",
+      "ats": "smartrecruiters",
+      "slug": "CheckPointSoftwareTechnologies2"
+    },
+    {
+      "name": "Cellebrite",
+      "ats": "comeet",
+      "slug": "cellebrite/C3.00F"
+    },
+    {
+      "name": "HiBob",
+      "ats": "hibob",
+      "slug": "hibob-fa0ad69d0cb34a|Tel Aviv"
+    },
+    {
+      "name": "Sapiens",
+      "ats": "hibob",
+      "slug": "sapiens|Holon"
+    },
+    {
+      "name": "Amdocs",
+      "ats": "eightfold",
+      "slug": "jobs.amdocs.com|amdocs.com"
+    },
+    {
+      "name": "Elbit Systems",
+      "ats": "elbit",
+      "slug": "https://elbitsystemscareer.com/cron/jobs.json"
+    },
+    {
+      "name": "Matrix",
+      "ats": "matrix",
+      "slug": "https://www.matrix.co.il/jobs/%D7%9E%D7%A9%D7%A8%D7%94/"
+    },
+    {
+      "name": "Malam Team",
+      "ats": "malam",
+      "slug": "https://www.malamteam.com/%D7%9C%D7%95%D7%91%D7%99-%D7%97%D7%99%D7%A4%D7%95%D7%A9-%D7%A7%D7%A8%D7%99%D7%99%D7%A8%D7%94/"
+    },
+    {
+      "name": "Keshet",
+      "ats": "comeet_city",
+      "slug": "keshet/26.009|Tel Aviv"
+    },
+    {
+      "name": "Ness",
+      "ats": "ness",
+      "slug": "ness"
+    },
+    {
+      "name": "Max",
+      "ats": "max",
+      "slug": "max"
+    },
+    {
+      "name": "Isracard",
+      "ats": "isracard",
+      "slug": "isracard"
+    },
+    {
+      "name": "Cal",
+      "ats": "cal",
+      "slug": "cal"
+    },
+    {
+      "name": "Bezeq",
+      "ats": "bezeq",
+      "slug": "bezeq"
+    },
+    {
+      "name": "Partner",
+      "ats": "adamtotal",
+      "slug": "0940de9c-ccff-4b4d-9abf-f4543f88cba5"
+    },
+    {
+      "name": "Cellcom",
+      "ats": "cellcom",
+      "slug": "cellcom"
+    },
+    {
+      "name": "HOT",
+      "ats": "hot",
+      "slug": "hot"
+    },
+    {
+      "name": "Clalit",
+      "ats": "clalit",
+      "slug": "clalit"
+    },
+    {
+      "name": "Maccabi",
+      "ats": "maccabi",
+      "slug": "maccabi"
+    },
+    {
+      "name": "Sheba",
+      "ats": "sheba",
+      "slug": "sheba"
+    },
+    {
+      "name": "Ichilov",
+      "ats": "redmatch",
+      "slug": "careers.topmatch.co.il|3FC41CB2-A7A8-454A-BC2B-0EDC1A919656|https://jobs.tasmc.org.il/Positions/redmatch-apply/redmatch.apply.html|תל אביב"
+    },
+    {
+      "name": "Hadassah",
+      "ats": "hadassah",
+      "slug": "hadassah"
+    },
+    {
+      "name": "Mekorot",
+      "ats": "mekorot",
+      "slug": "mekorot"
+    },
+    {
+      "name": "Strauss",
+      "ats": "strauss",
+      "slug": "strauss"
+    },
+    {
+      "name": "Osem-Nestle",
+      "ats": "osem",
+      "slug": "osem"
+    },
+    {
+      "name": "Tnuva",
+      "ats": "tnuva",
+      "slug": "tnuva"
+    },
+    {
+      "name": "Shufersal",
+      "ats": "shufersal",
+      "slug": "shufersal"
+    }
+  ],
+  "social_sources": [
+    {
+      "name": "indeed",
+      "enabled": false,
+      "keywords_en": [
+        "analytics engineer",
+        "data engineer",
+        "data analyst",
+        "analytics"
+      ],
+      "keywords_he": [
+        "מהנדס נתונים",
+        "אנליסט נתונים",
+        "analytics"
+      ]
+    },
+    {
+      "name": "github_jobs",
+      "enabled": false,
+      "keywords_en": [
+        "backend",
+        "data engineer",
+        "analytics engineer"
+      ],
+      "keywords_he": []
+    },
+    {
+      "name": "stackoverflow",
+      "enabled": false,
+      "keywords_en": [
+        "data engineer",
+        "backend engineer",
+        "analytics"
+      ],
+      "keywords_he": []
+    },
+    {
+      "name": "linkedin_posts",
+      "enabled": false,
+      "keywords_en": [
+        "hiring",
+        "we're hiring",
+        "now hiring",
+        "job opening",
+        "data engineer",
+        "analytics engineer"
+      ],
+      "keywords_he": [
+        "אנחנו מחפשים",
+        "מחפשים",
+        "הגדול",
+        "משרה פתוחה",
+        "מהנדס נתונים"
+      ]
+    },
+    {
+      "name": "drushim",
+      "enabled": false,
+      "keywords_he": [
+        "מהנדס נתונים",
+        "מהנדס",
+        "אנליסט",
+        "BI",
+        "analytics",
+        "דטה"
+      ],
+      "keywords_en": []
+    },
+    {
+      "name": "alljobs",
+      "enabled": false,
+      "keywords_he": [
+        "מהנדס נתונים",
+        "מהנדס",
+        "אנליסט",
+        "BI",
+        "analytics"
+      ],
+      "keywords_en": []
+    },
+    {
+      "name": "jobmaster",
+      "enabled": false,
+      "keywords_he": [
+        "מהנדס נתונים",
+        "מהנדס",
+        "אנליסט"
+      ],
+      "keywords_en": []
+    },
+    {
+      "name": "google_jobs",
+      "enabled": false,
+      "keywords_en": [
+        "data engineer",
+        "analytics engineer",
+        "backend engineer"
+      ],
+      "keywords_he": [
+        "מהנדס נתונים",
+        "אנליסט נתונים"
+      ]
+    }
+  ],
+  "_exclude_comment": "Banks and insurers are dropped everywhere. exclude_companies = regexes on the company name; exclude_description_patterns = regexes on the posting text (staffing agencies hide the client); exclude_companies_except wins over both. Credit-card companies (Isracard, Max, Cal) and investment houses are NOT excluded.",
+  "exclude_companies": [
+    "\\bbank",
+    "banking",
+    "\\bleumi\\b",
+    "hapoalim",
+    "\\bdiscount\\b",
+    "tefahot",
+    "first international",
+    "\\bfibi\\b",
+    "mercantile",
+    "insurance",
+    "insurtech",
+    "\\bharel\\b",
+    "\\bmigdal\\b",
+    "\\bclal\\b",
+    "phoenix",
+    "menora",
+    "mivtachim",
+    "hachshara",
+    "shirbit",
+    "\\baig\\b",
+    "lemonade",
+    "wesure",
+    "bituach",
+    "בנק",
+    "\\bלאומי\\b",
+    "הפועלים",
+    "דיסקונט",
+    "טפחות",
+    "מרכנתיל",
+    "אוצר החייל",
+    "ביטוח",
+    "\\bהראל\\b",
+    "^(?:מגדל|כלל|מנורה)(?:\\s|$)",
+    "הפניקס",
+    "מבטחים",
+    "שירביט"
+  ],
+  "exclude_description_patterns": [
+    "(?:ל|ב)בנק\\b",
+    "(?:ל|ב)חברת ביטוח",
+    "(?:ל|ב)קבוצת ביטוח",
+    "בנק מוביל",
+    "חברת ביטוח מוביל",
+    "\\bleading bank\\b",
+    "\\binsurance company\\b"
+  ],
+  "exclude_companies_except": [
+    "ביטוח לאומי",
+    "national insurance institute",
+    "bituach leumi",
+    "bituah leumi"
+  ],
+  "market_sources": {
+    "_comment": "Whole-market keyword searches (market_sources.py). LinkedIn = public guest search, Israel, last `days` days, 10 postings per page. Drushim = its JSON API, 10 per page. More keywords/pages = more coverage and a longer scan.",
+    "linkedin": {
+      "enabled": true,
+      "pages_per_keyword": 10,
+      "keywords": [
+        "data analyst",
+        "data engineer",
+        "analytics engineer",
+        "data scientist",
+        "BI developer",
+        "business intelligence",
+        "data team lead",
+        "analytics manager",
+        "head of data"
+      ]
+    },
+    "drushim": {
+      "enabled": true,
+      "pages_per_keyword": 5,
+      "keywords": [
+        "אנליסט נתונים",
+        "מהנדס נתונים",
+        "דאטה",
+        "BI",
+        "data analyst",
+        "data engineer",
+        "data scientist",
+        "analytics",
+        "ראש צוות דאטה"
+      ]
+    },
+    "linkedin_posts": {
+      "enabled": true,
+      "pages_per_query": 3,
+      "_comment": "Recruiting posts via Yahoo (the only engine that answers without captcha; DuckDuckGo blocks after a few queries, Bing/Google/Brave/Startpage captcha — checked 2026-11-08). ~95% of Yahoo's post results are older than max_age_days, so breadth (20 queries x 3 pages) is what buys yield. Israeli posts that name no city are kept as 'city not stated'.",
+      "queries": [
+        "hiring \"data analyst\" israel",
+        "hiring \"senior data analyst\" israel",
+        "hiring \"data scientist\" israel",
+        "hiring \"analytics engineer\" israel",
+        "hiring \"data engineer\" israel",
+        "hiring \"BI developer\" israel",
+        "hiring \"data team lead\" israel",
+        "hiring \"analytics\" \"tel aviv\"",
+        "hiring data \"tel aviv\"",
+        "hiring data jerusalem",
+        "\"we are hiring\" data israel",
+        "\"looking for\" \"data analyst\" israel",
+        "מחפשים \"אנליסט נתונים\"",
+        "מגייסים \"אנליסט/ית\"",
+        "מחפשים \"דאטה\"",
+        "\"מהנדס/ת נתונים\"",
+        "\"ראש צוות\" דאטה",
+        "דרוש/ה \"data analyst\"",
+        "\"משרה\" \"data analyst\"",
+        "מגייסים \"data scientist\""
+      ]
+    },
+    "civil_service": {
+      "enabled": true,
+      "_comment": "נציבות שירות המדינה — all open tenders (~300), filtered by title_keywords."
+    },
+    "govil": {
+      "enabled": true,
+      "pages_per_keyword": 3,
+      "_comment": "gov.il דרושים (ministries, hospitals). Only listings marked פעיל.",
+      "keywords": [
+        "אנליסט",
+        "נתונים",
+        "דאטה",
+        "מידע",
+        "סטטיסטיקן",
+        "BI",
+        "כלכלן"
+      ]
+    },
+    "alljobs": {
+      "enabled": true,
+      "pages_per_keyword": 3,
+      "_comment": "30 jobs per page, full text included. ~6s per page.",
+      "keywords": [
+        "אנליסט נתונים",
+        "מהנדס נתונים",
+        "BI",
+        "data analyst",
+        "data engineer",
+        "data scientist",
+        "דאטה"
+      ]
+    },
+    "jobmaster": {
+      "enabled": true,
+      "pages_per_keyword": 5,
+      "_comment": "Guests only see 10 jobs per query; extra 'pages' are the same query per city.",
+      "keywords": [
+        "אנליסט נתונים",
+        "מהנדס נתונים",
+        "BI",
+        "data analyst",
+        "data engineer"
+      ]
+    }
+  },
+  "_social_comment": "social_sources are the old scrapers; none of them ever returned a job (checked 2026-10-02) and find_jobs_combined.py no longer calls them. market_sources replaced them.",
+  "_career_sites_comment": "Companies the scan cannot read (own career sites / bot walls). START.bat [5] opens them all in the browser for a manual check. Every URL was found as a link on the company's own homepage or opened successfully on 2026-10-02.",
+  "career_sites": [
+    {
+      "name": "Rafael",
+      "url": "https://career.rafael.co.il/"
+    },
+    {
+      "name": "IAI",
+      "url": "https://jobs.iai.co.il/"
+    },
+    {
+      "name": "Verint",
+      "url": "https://www.verint.com/careers/"
+    },
+    {
+      "name": "Verbit",
+      "url": "https://verbit.ai/careers/"
+    },
+    {
+      "name": "Israel Electric (IEC)",
+      "url": "https://www.iec.co.il/career"
+    },
+    {
+      "name": "Israel Post",
+      "url": "https://doar.israelpost.co.il/content/jobs/"
+    },
+    {
+      "name": "ZIM",
+      "url": "https://www.zim.com/careers"
+    },
+    {
+      "name": "Super-Pharm",
+      "url": "https://jobs.super-pharm.co.il"
+    },
+    {
+      "name": "Bazan",
+      "url": "https://www.bazan.co.il/career/"
+    }
+  ],
+  "_company_sites_comment": "2026-11-07: hibob / eightfold / elbit / matrix / malam readers live in company_sites.py. Matrix and Malam give regions, not cities, hence 'גוש דן' in locations. Verint (Oracle HCM) and Verbit (WordPress) are readable but had 0 Israel jobs; Rafael and IAI sit behind a Reblaze/Link11 bot wall. Batch 2 (company_sites_b2.py): Keshet (comeet, no location -> Tel Aviv), Ness, Max, Isracard (Wix data), Cal, Bezeq, Partner (AdamTotal token), Cellcom (Episerver), HOT, Clalit (RedMatch), Maccabi, Sheba (Ramat Gan). Region-only sources pass the location filter only when the region/title names a wanted place. Batch 3 (company_sites_b3.py, 2026-11-08): Ichilov (RedMatch/TopMatch), Hadassah, Mekorot, Strauss, Osem, Tnuva, Shufersal (Wix web method). Unreadable: Bazan, Israel Post (Cloudflare), Super-Pharm (Reblaze), ZIM (Akamai + lazy widget), IEC (source not found)."
+}

@@ -1,0 +1,24 @@
+# Secrets
+.env
+
+# Personal data: CV, applications, scan results
+*.pdf
+*.docx
+applications.xlsx
+applications/
+jobs_found.json
+jobs_found.md
+submission_*.json
+TOOL_FILES/engine/_old_master/
+TOOL_FILES/engine/job_description.txt
+TOOL_FILES/engine/candidate_memory.json*
+TOOL_FILES/engine/manual_jobs.json
+TOOL_FILES/engine/skill_cache.json
+TOOL_FILES/engine/.cv_skills.json
+
+# Runtime
+TOOL_FILES/engine/web_app.log
+TOOL_FILES/engine/.last_scan_seconds
+__pycache__/
+*.py[cod]
+.venv/
