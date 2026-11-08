@@ -91,14 +91,22 @@ def scan_linkedin(settings: dict[str, Any], days: int = 30) -> list[Job]:
     found: list[Job] = []
     for keyword in settings.get("keywords", []):
         for page in range(pages):
-            try:
-                batch = _linkedin_page(keyword, page * 10, days)
-            except urllib.error.HTTPError as exc:
-                if exc.code == 429:  # rate limited: back off once, then move on
-                    time.sleep(20)
-                    continue
-                break
-            except Exception:
+            # LinkedIn answers 429 after ~7 quick requests and lets us back in about a second later
+            # (measured 2026-11-08). The old fixed 20 s wait + skipping the page cost ~220 s per scan
+            # and lost pages; now: short waits, doubling, and the same page is retried.
+            batch, wait = None, 2.0
+            for _attempt in range(5):
+                try:
+                    batch = _linkedin_page(keyword, page * 10, days)
+                    break
+                except urllib.error.HTTPError as exc:
+                    if exc.code != 429:
+                        break
+                    time.sleep(wait)
+                    wait *= 2
+                except Exception:
+                    break
+            if batch is None:
                 break
             found.extend(batch)
             if len(batch) < 10:

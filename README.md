@@ -6,7 +6,7 @@ A one-click job-search tool for the Israeli market. It scans 120+ company career
 
 ```mermaid
 flowchart LR
-    subgraph SRC["1 · Sources (scanned in parallel, ~7 min)"]
+    subgraph SRC["1 · Sources (scanned in parallel, ~3 min)"]
         direction TB
         ATS["Company ATS boards<br/>Greenhouse · Lever · Ashby · Comeet<br/>Workday · SmartRecruiters · SuccessFactors"]
         OWN["Company career sites<br/>own readers for 27 sites<br/>(Elbit, Matrix, Clalit, Max, Bezeq, ...)"]

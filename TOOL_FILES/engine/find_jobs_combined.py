@@ -37,7 +37,7 @@ CONFIG_PATH = ENGINE_DIR / "job_search_config.json"
 
 
 LAST_DURATION = ENGINE_DIR / ".last_scan_seconds"
-DEFAULT_DURATION = 400  # parallel scan, measured 2026-11-07
+DEFAULT_DURATION = 180  # parallel scan with fast LinkedIn backoff, measured 2026-11-08 (2:52)
 
 
 class ScanClock:

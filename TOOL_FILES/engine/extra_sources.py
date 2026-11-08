@@ -118,6 +118,12 @@ def _looks_israeli(text: str, locations: list[str]) -> bool:
     return bool(_HEBREW.search(text)) or any(loc.lower() in low for loc in locations)
 
 
+# Pauses (seconds) between Yahoo result pages and between public post fetches. Halved on
+# 2026-11-08 (220 s -> 111 s for the posts source) with no blocking and the same yield.
+SEARCH_PAUSE = (0.8, 1.4)
+POST_PAUSE = (0.4, 0.8)
+
+
 def scan_linkedin_posts(settings: dict[str, Any], days: int, locations: list[str],
                         title_keywords: list[str] = ()) -> list[tuple[Job, str]]:
     _need_curl()
@@ -131,10 +137,14 @@ def scan_linkedin_posts(settings: dict[str, Any], days: int, locations: list[str
         for page in range(pages):
             try:
                 hits = _yahoo(query, page)
-            except Exception as exc:
-                print(f"         LinkedIn posts: search failed ({exc})")
-                break
-            time.sleep(random.uniform(2.0, 3.5))
+            except Exception:
+                time.sleep(4)  # Yahoo occasionally drops a connection; one slower retry
+                try:
+                    hits = _yahoo(query, page)
+                except Exception as exc:
+                    print(f"         LinkedIn posts: search failed ({str(exc)[:80]})")
+                    break
+            time.sleep(random.uniform(*SEARCH_PAUSE))
             if not hits:
                 break
             for hit in hits:
@@ -148,7 +158,7 @@ def scan_linkedin_posts(settings: dict[str, Any], days: int, locations: list[str
                 author = hit["title"].split("|")[-1].replace("- LinkedIn", "").strip() if "|" in hit["title"] else ""
                 text = hit["snippet"]
                 post = fetch_post(url)
-                time.sleep(random.uniform(1.0, 2.0))
+                time.sleep(random.uniform(*POST_PAUSE))
                 if post:
                     author, text = post[0] or author, post[1] or text
                 if not _looks_israeli(text, locations):

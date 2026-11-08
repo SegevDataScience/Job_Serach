@@ -823,7 +823,7 @@ async function poll() {
   }
 }
 $("#btnScan").onclick = async () => {
-  if (!confirm("סריקה מלאה לוקחת כ-10 דקות. להתחיל?")) return;
+  if (!confirm("סריקה מלאה לוקחת כ-3 דקות. להתחיל?")) return;
   await api("/api/scan", {}); showingOld = false; showTab("jobs"); poll();
 };
 $("#btnPublish").onclick = async () => {

@@ -46,6 +46,9 @@ LAST_DURATION = ENGINE_DIR / ".last_scan_seconds"
 MANUAL_FILE = ENGINE_DIR / "job_description.txt"
 
 HOST, PORT = "127.0.0.1", 8765  # fixed, so the page's saved filters/hidden jobs survive restarts
+# If another program holds 8765 (2026-11-08: someone's `python -m http.server 8765`), the next free
+# port is used instead of failing silently (there is no console window to show an error).
+PORTS = [8765, 8766, 8767, 8768, 8769, 8770]
 IDLE_EXIT_SECONDS = 180
 
 SOURCE_LABELS = {
@@ -678,11 +681,27 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"error": str(exc)}, 500)
 
 
-def already_running() -> bool:
+class ExclusiveServer(ThreadingHTTPServer):
+    """HTTPServer sets SO_REUSEADDR, which on Windows lets a second program bind a port that is
+    already in use — two servers on one port, either may answer. Bind exclusively instead, so a
+    taken port fails and the next one in PORTS is tried."""
+
+    allow_reuse_address = False
+
+    def server_bind(self):
+        import socket
+
+        if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
+def ours(port: int) -> bool:
+    """True when this job-search server (not some other program) answers on the port."""
     try:
-        with urllib.request.urlopen(f"http://{HOST}:{PORT}/api/ping", timeout=2) as resp:
-            return resp.status == 200
-    except OSError:
+        with urllib.request.urlopen(f"http://{HOST}:{port}/api/ping", timeout=2) as resp:
+            return json.loads(resp.read() or b"{}").get("ok") is True
+    except (OSError, ValueError):
         return False
 
 
@@ -690,24 +709,39 @@ def main() -> int:
     if sys.stdout is None:  # pythonw.exe: no console, so keep a log file for errors
         log = open(ENGINE_DIR / "web_app.log", "a", encoding="utf-8", buffering=1)
         sys.stdout = sys.stderr = log
+    global PORT
     want_scan = "--scan" in sys.argv
-    url = f"http://{HOST}:{PORT}/"
+    pinned = int(sys.argv[sys.argv.index("--port") + 1]) if "--port" in sys.argv else None
 
-    if already_running():
-        if want_scan:
-            urllib.request.urlopen(urllib.request.Request(url + "api/scan", data=b"{}", method="POST"), timeout=5)
-        webbrowser.open_new_tab(url)
-        print("The job-search page is already running — opened it in the browser.")
-        return 0
+    for port in ([pinned] if pinned else PORTS):
+        if ours(port):
+            url = f"http://{HOST}:{port}/"
+            if want_scan:
+                urllib.request.urlopen(urllib.request.Request(url + "api/scan", data=b"{}", method="POST"), timeout=5)
+            if "--no-browser" not in sys.argv:
+                webbrowser.open_new_tab(url)
+            print("The job-search page is already running — opened it in the browser.")
+            return 0
 
-    for _ in range(40):  # after a self-restart the old process may still hold the port briefly
-        try:
-            server = ThreadingHTTPServer((HOST, PORT), Handler)
-            break
-        except OSError:
-            time.sleep(0.25)
+    server = None
+    if pinned:  # a self-restart: the old process may still hold its port for a moment
+        for _ in range(40):
+            try:
+                server = ExclusiveServer((HOST, pinned), Handler)
+                break
+            except OSError:
+                time.sleep(0.25)
     else:
-        raise SystemExit(f"port {PORT} is busy")
+        for port in PORTS:
+            try:
+                server = ExclusiveServer((HOST, port), Handler)
+                break
+            except OSError:
+                print(f"port {port} is taken by another program, trying the next one", flush=True)
+    if server is None:
+        raise SystemExit(f"no free port among {PORTS}")
+    PORT = server.server_address[1]
+    url = f"http://{HOST}:{PORT}/"
     if want_scan:
         SCAN.start()
     else:
@@ -750,7 +784,7 @@ def main() -> int:
     server.server_close()
     if restart[0]:
         print("Engine code changed — restarting the server.", flush=True)
-        subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--no-browser"], cwd=str(DATA_ROOT),
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--no-browser", "--port", str(PORT)], cwd=str(DATA_ROOT),
                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) | getattr(subprocess, "DETACHED_PROCESS", 0))
     return 0
 
