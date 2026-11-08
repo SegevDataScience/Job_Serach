@@ -68,7 +68,8 @@ SOURCE_LABELS = {
 # filter (asked 2026-11-07), not the official ones; each city sits in exactly one.
 JLM, DAN, HOLON, RISHON, MOD, OTHER = ("מחוז ירושלים", "מחוז תל אביב", "מחוז חולון", 'מחוז ראשל"צ',
                                       "מחוז מודיעין", "אחר")
-DISTRICT_ORDER = [DAN, JLM, HOLON, RISHON, MOD, OTHER]
+SOUTHWEST = "מחוז אשדוד-אשקלון"  # cities inside the 55 km zone (2026-11-08) that fit none of his districts
+DISTRICT_ORDER = [DAN, JLM, HOLON, RISHON, MOD, SOUTHWEST, OTHER]
 CITIES: list[tuple[str, str, list[str]]] = [
     ("תל אביב", DAN, ["tel aviv", "tel-aviv", "tlv", "jaffa", "תל אביב", "תל-אביב"]),
     ("ירושלים", JLM, ["jerusalem", "ירושלים"]),
@@ -95,7 +96,7 @@ CITIES: list[tuple[str, str, list[str]]] = [
     ("פוסט בלי עיר", OTHER, ["city not stated"]),  # Matrix / Malam list regions, not cities  # the Hebrew name is also the word "area"
     ("רעננה", OTHER, ["raanana", "ra'anana", "רעננה"]),
     ("כפר סבא", OTHER, ["kfar saba", "kefar sava", "כפר סבא"]),
-    ("הוד השרון", OTHER, ["hod hasharon", "הוד השרון"]),
+    ("הוד השרון", DAN, ["hod hasharon", "הוד השרון"]),
     ("נתניה", OTHER, ["netanya", "נתניה"]),
     ("רחובות", RISHON, ["rehovot", "רחובות"]),
     ("נס ציונה", RISHON, ["ness ziona", "nes ziona", "נס ציונה"]),
@@ -106,12 +107,22 @@ CITIES: list[tuple[str, str, list[str]]] = [
     ("באר שבע", OTHER, ["beer sheva", "be'er sheva", "באר שבע"]),
     ("קיסריה", OTHER, ["caesarea", "קיסריה"]),
     ("בית שמש", JLM, ["beit shemesh", "בית שמש"]),
+    ("מעלה אדומים", JLM, ["maale adumim", "ma'ale adumim", "מעלה אדומים"]),
+    ("גבעת זאב", JLM, ["givat zeev", "גבעת זאב"]),
+    ("אלעד", DAN, ["elad", "אלעד"]),
+    ("יבנה", RISHON, ["yavne", "יבנה"]),
+    ("גדרה", RISHON, ["gedera", "גדרה"]),
+    ("אשדוד", SOUTHWEST, ["ashdod", "אשדוד"]),
+    ("אשקלון", SOUTHWEST, ["ashkelon", "אשקלון"]),
+    ("קריית גת", SOUTHWEST, ["kiryat gat", "qiryat gat", "קריית גת", "קרית גת"]),
+    ("קריית מלאכי", SOUTHWEST, ["kiryat malachi", "קריית מלאכי", "קרית מלאכי"]),
 ]
 EXCLUDE = ["modiin ilit", "modiin illit", "modi'in illit", "מודיעין עילית", "even yehuda", "אבן יהודה",
            "tel mond", "תל מונד", "beit yehoshua", "בית יהושע"]
 DISTRICTS = [("tel aviv district", "תל אביב והסביבה (בלי עיר)", DAN),
              ("jerusalem district", "ירושלים והסביבה (בלי עיר)", JLM),
              ("center district", "מרכז (בלי עיר)", OTHER)]
+CITY_DISTRICT = {c: d for c, d, _ in CITIES} | {name: d for _, name, d in DISTRICTS}
 
 
 def place(location: str) -> tuple[list[str], list[str]]:
@@ -173,6 +184,26 @@ def _first_seen(urls: list[str]) -> dict:
     return seen
 
 
+# Team management = leading people, not just "manager" in the title (product/project/account
+# managers are individual contributors). His split, 2026-11-08.
+_MGMT = re.compile(
+    r"team\s*lead|team\s*leader|group\s*(?:lead|leader|manager)|head\s+of|director|\bvp\b|vice\s+president|"
+    r"\bmanager\b|ראש\s*צוות|ר\"צ|ראש\s*(?:תחום|קבוצה|מחלקה|אגף)|"
+    r"מנהל(?:/ת|ת|\.ת)?\s+(?:צוות|מחלקת|מחלקה|תחום|קבוצה|יחידת|יחידה|מערך|פיתוח|דאטה|נתונים|bi|אנליטיקה|מחקר|data)", re.I)
+_NOT_MGMT = re.compile(
+    r"(?:product|project|program|account|customer\s+success|success|sales|marketing|partner|office|community|campaign|"
+    r"solution|solutions|channel|territory|category|brand|content|release|delivery)\s+manager|manager,\s*(?:product|program)|"
+    r"מנהל(?:/ת|ת|\.ת)?\s+(?:מוצר|פרויקט|פרויקטים|תיקי|לקוחות|מכירות|שיווק|חשבונות|משמרת|סניף|קמפיינים|תיק)", re.I)
+_STRONG_MGMT = re.compile(r"team\s*lead|ראש\s*צוות|head\s+of|director|group\s*(?:lead|manager)", re.I)
+
+
+def is_team_lead(title: str) -> bool:
+    title = title or ""
+    if not _MGMT.search(title):
+        return False
+    return bool(_STRONG_MGMT.search(title)) or not _NOT_MGMT.search(title)
+
+
 def load_jobs() -> dict:
     raw = json.loads(JOBS_FILE.read_text(encoding="utf-8")) if JOBS_FILE.exists() else []
     urls = {j.get("url") for j in raw}
@@ -187,8 +218,17 @@ def load_jobs() -> dict:
     seen = _first_seen([j.get("url", "") for j in raw])
     today = date.today()
     jobs = []
+    import geo
+
+    out_of_zone = {name for name, *_ in geo.PLACES if not geo.in_zone(name)}
     for i, job in enumerate(raw):
+        if geo.zone_verdict(job.get("location", "")) is False:
+            continue  # every named place is outside the commuting zone (ids stay = RAW index)
         cities, regions = place(job.get("location", ""))
+        kept = [c for c in cities if c not in out_of_zone]
+        if kept != cities:  # "Haifa; Tel Aviv" is shown as Tel Aviv only
+            cities = kept or ["לא צוין"]
+            regions = sorted({CITY_DISTRICT.get(c, OTHER) for c in cities}, key=DISTRICT_ORDER.index)
         updated = (job.get("updated") or "")[:10]
         try:
             age = (today - date.fromisoformat(updated)).days
@@ -209,6 +249,7 @@ def load_jobs() -> dict:
             "age": age,
             "score": round(job.get("personalized_score", 0)),
             "leadership": bool(job.get("leadership")),
+            "team_lead": is_team_lead(job.get("title", "")),
             **_fit_fields(job),
             "state": job_state(ns, by_url, by_pair),  # "", "listed" or "sent"
             "first_seen": seen.get(job.get("url", ""), ""),

@@ -497,11 +497,19 @@ def score_job(job: Job, config: dict[str, Any], text: str = "") -> Job | None:
         return None
 
     # An Israeli recruiting post often names no city; those are kept rather than lost.
+    # Commuting zone (geo.py, 2026-11-08): out if every named place is north of Herzliya,
+    # Be'er Sheva, or >55 km from Jerusalem and Shoresh; in if any named place is inside.
+    # Only when no place is recognisable does the older city whitelist decide.
+    import geo
+
+    verdict = geo.zone_verdict(job.location)
+    if verdict is False:
+        return None
     # Same for employers whose own site never names a place (Max, Cal): "city not stated".
     post_without_city = "city not stated" in job.location
-    if not post_without_city and not matches_location(job.location, [l.lower() for l in config["locations"]],
-                                                      config.get("include_bare_remote", False),
-                                                      [l.lower() for l in config.get("exclude_locations", [])]):
+    if verdict is None and not post_without_city and not matches_location(
+            job.location, [l.lower() for l in config["locations"]], config.get("include_bare_remote", False),
+            [l.lower() for l in config.get("exclude_locations", [])]):
         return None
 
     job.matched = matched

@@ -196,22 +196,32 @@ ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); 
 
 <!-- ============ TOP 15 (home) ============ -->
 <section id="v-top" class="view">
-  <section class="panel" id="topPanel">
-    <div class="bar">
-      <span class="count">15 המשרות שהכי מתאימות לך</span>
-      <span class="meta" id="topMeta"></span>
-      <span class="meta" id="enrichTop"></span>
-      <span class="spacer"></span>
-      <span class="meta">דירוג לפי התאמה כוללת: תפקיד + כישורים מול קורות החיים. בלי משרות שהוגשו או הוסתרו.</span>
-    </div>
+  <div id="topPanel">
+  <div class="meta" style="margin:0 2px 10px; display:flex; gap:12px; flex-wrap:wrap">
+    <span id="topMeta"></span><span id="enrichTop"></span><span class="spacer"></span>
+    <span>דירוג לפי התאמה כוללת: תפקיד + כישורים מול קורות החיים. בלי משרות שהוגשו או הוסתרו.</span>
+  </div>
+  <section class="panel" style="margin-bottom:16px">
+    <div class="bar"><span class="count">👥 ניהול צוות — TOP 15</span><span class="meta" id="topLeadMeta"></span></div>
     <div style="overflow:auto">
       <table class="jobtable">
         <thead><tr><th>#</th><th>התאמה</th><th>תפקיד</th><th>חברה</th><th>מיקום</th><th>פורסם</th><th>מקור</th><th></th></tr></thead>
-        <tbody id="topRows"></tbody>
+        <tbody id="topLeadRows"></tbody>
       </table>
-      <div class="empty hidden" id="topEmpty">טוען…</div>
+      <div class="empty hidden" id="topLeadEmpty">אין כרגע משרות ניהול צוות.</div>
     </div>
   </section>
+  <section class="panel">
+    <div class="bar"><span class="count">🧑‍💻 ללא ניהול — TOP 15</span><span class="meta" id="topIcMeta"></span></div>
+    <div style="overflow:auto">
+      <table class="jobtable">
+        <thead><tr><th>#</th><th>התאמה</th><th>תפקיד</th><th>חברה</th><th>מיקום</th><th>פורסם</th><th>מקור</th><th></th></tr></thead>
+        <tbody id="topIcRows"></tbody>
+      </table>
+      <div class="empty hidden" id="topIcEmpty">טוען…</div>
+    </div>
+  </section>
+  </div>
 </section>
 
 <!-- ============ DEEP DIVE (filters) ============ -->
@@ -230,7 +240,7 @@ ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; color: var(--muted); 
       <div class="f"><span class="lbl">מיקום <button class="link" id="clearCities">נקה</button></span><div class="cities" id="cities"></div></div>
       <div class="f"><span class="lbl">התאמה מינימלית</span>
         <div class="range"><input type="range" id="minScore" min="0" max="100" step="5" value="0"><b id="minScoreVal">0</b></div></div>
-      <div class="f"><span class="lbl">סוג תפקיד</span><label class="check"><input type="checkbox" id="leadOnly"> רק ניהול / Lead</label>
+      <div class="f"><span class="lbl">סוג תפקיד</span><div class="chips" id="kinds" style="margin-bottom:6px"></div>
         <label class="check"><input type="checkbox" id="newOnly"> רק משרות חדשות מאז הביקור הקודם <small id="newCount" class="sub"></small></label></div>
       <div class="f"><span class="lbl">סטטוס</span><div class="chips" id="states"></div></div>
       <div class="f"><span class="lbl">מקור <button class="link" id="clearSources">נקה</button></span><div class="chips" id="sources"></div></div>
@@ -376,7 +386,7 @@ let DISTRICTS = [], CITY_DISTRICT = {};
 let JOBS = [], SCANNED = null, APPS = [], SEARCHES = [];
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (e) {}
-const DEF = { q: "", age: "", undated: true, cities: [], minScore: 0, leadOnly: false, states: ["new", "listed"], sources: [] };
+const DEF = { q: "", age: "", undated: true, cities: [], minScore: 0, kinds: ["lead", "ic"], states: ["new", "listed"], sources: [] };
 const F = Object.assign({ ...DEF, sort: "score", asc: false }, saved.filters || {});
 F.cities = []; delete F.top15; delete F.regions;
 const HIDDEN = new Set(saved.hidden || []);
@@ -466,13 +476,15 @@ function buildFilters() {
   const st = new Map(); for (const j of JOBS) st.set(stateOf(j), (st.get(stateOf(j)) || 0) + 1);
   chipGroup($("#states"), STATES.map(([v, l]) => [v, l, st.get(v) || 0]), F.states, render);
   $("#q").value = F.q; $("#age").value = F.age; $("#undated").checked = F.undated;
-  $("#minScore").value = F.minScore; $("#minScoreVal").textContent = F.minScore; $("#leadOnly").checked = F.leadOnly;
+  $("#minScore").value = F.minScore; $("#minScoreVal").textContent = F.minScore;
+  if (!Array.isArray(F.kinds)) F.kinds = ["lead", "ic"];
+  const kc = { lead: JOBS.filter(j => j.team_lead).length, ic: JOBS.filter(j => !j.team_lead).length };
+  chipGroup($("#kinds"), [["lead", "👥 ניהול צוות", kc.lead], ["ic", "🧑‍💻 ללא ניהול", kc.ic]], F.kinds, render);
 }
 $("#q").oninput = e => { F.q = e.target.value; render(); };
 $("#age").onchange = e => { F.age = e.target.value; render(); };
 $("#undated").onchange = e => { F.undated = e.target.checked; render(); };
 $("#minScore").oninput = e => { F.minScore = +e.target.value; $("#minScoreVal").textContent = F.minScore; render(); };
-$("#leadOnly").onchange = e => { F.leadOnly = e.target.checked; render(); };
 $("#newOnly").onchange = e => { F.newOnly = e.target.checked; render(); };
 $("#clearCities").onclick = () => { F.cities.length = 0; buildFilters(); render(); };
 $("#clearSources").onclick = () => { F.sources.length = 0; buildFilters(); render(); };
@@ -493,7 +505,7 @@ function passes(j) {
   else if (j.age == null && !F.undated) return false;
   if (F.cities.length && !j.cities.some(c => F.cities.includes(c))) return false;
   if (j.fit < F.minScore) return false;
-  if (F.leadOnly && !j.leadership) return false;
+  if (F.kinds && F.kinds.length < 2 && !F.kinds.includes(j.team_lead ? "lead" : "ic")) return false;
   if (F.newOnly && !isNew(j)) return false;
   if (F.states.length && !F.states.includes(stateOf(j))) return false;
   if (F.sources.length && !F.sources.includes(j.source)) return false;
@@ -535,10 +547,15 @@ function render() {
   renderTop();
 }
 function renderTop() {
-  const top = JOBS.filter(j => ["new", "listed"].includes(stateOf(j))).sort((a, b) => b.fit - a.fit || b.score - a.score).slice(0, 15);
-  $("#topRows").innerHTML = top.map((j, i) => rowHtml(j, i + 1)).join("");
-  $("#topEmpty").classList.toggle("hidden", top.length > 0);
-  $("#topEmpty").textContent = JOBS.length ? "אין משרות." : "טוען…";
+  // Two separate rankings: team-management roles and the rest (his split, 2026-11-08).
+  const open = JOBS.filter(j => ["new", "listed"].includes(stateOf(j))).sort((a, b) => b.fit - a.fit || b.score - a.score);
+  for (const [key, isLead] of [["Lead", true], ["Ic", false]]) {
+    const all = open.filter(j => !!j.team_lead === isLead), top = all.slice(0, 15);
+    $(`#top${key}Rows`).innerHTML = top.map((j, i) => rowHtml(j, i + 1)).join("");
+    $(`#top${key}Empty`).classList.toggle("hidden", top.length > 0);
+    if (!JOBS.length) $(`#top${key}Empty`).textContent = "טוען…";
+    $(`#top${key}Meta`).textContent = JOBS.length ? `${all.length} משרות בקטגוריה` : "";
+  }
   const scored = JOBS.filter(j => j.skill != null).length;
   const fresh = JOBS.filter(isNew).length;
   $("#topMeta").textContent = JOBS.length ? `מתוך ${JOBS.length} משרות · ${scored} עם התאמת כישורים`
@@ -547,7 +564,7 @@ function renderTop() {
 }
 function rowHtml(j, rank) {
     const st = stateOf(j);
-    const tags = (isNew(j) ? `<span class="tag newtag">🆕 חדשה</span>` : "") + (j.leadership ? `<span class="tag lead">ניהול</span>` : "")
+    const tags = (isNew(j) ? `<span class="tag newtag">🆕 חדשה</span>` : "") + (j.team_lead ? `<span class="tag lead">👥 ניהול צוות</span>` : "")
       + (st === "listed" ? `<span class="tag listed">ברשימה</span>` : st === "sent" ? `<span class="tag sent">הוגש</span>` : "");
     return `<tr class="${st === "sent" ? "sent" : ""}" data-id="${j.id}">
       ${rank ? `<td class="sub">${rank}</td>` : ""}
@@ -572,7 +589,7 @@ async function act(j, action, btn) {
     buildFilters(); render(); if (OPEN === j) openDrawer(j, true);
   } catch (err) { toast(err.message); if (btn) btn.disabled = false; }
 }
-$("#rows").onclick = $("#topRows").onclick = e => {
+$("#rows").onclick = $("#topLeadRows").onclick = $("#topIcRows").onclick = e => {
   if (e.target.closest("a")) return;
   const tr = e.target.closest("tr"); if (!tr) return;
   const j = JOBS.find(x => x.id === +tr.dataset.id);
